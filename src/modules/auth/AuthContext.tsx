@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import type { User } from '@/types'
-import { api, storage } from '@/services/api'
+import type { User } from '@/types/index'
+import { storage } from '@/services/api'
+import { MOCK_USERS_DATA } from '@/services/mockUsers'
 
 type Ctx = {
   user: User | null
@@ -16,28 +17,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem(storage.key)
     const userCache = localStorage.getItem('fiap.user')
     if (token && userCache) {
-      try { setUser(JSON.parse(userCache)) } catch {}
+      try {
+        const parsedUser = JSON.parse(userCache);
+        setUser(parsedUser);
+      } catch (e) {
+        console.error("Erro ao parsear dados do usuário do localStorage:", e);
+        storage.clear();
+        localStorage.removeItem('fiap.user');
+      }
     }
-  }, [])
+  }, []);
 
   async function login(email: string, password: string) {
-  try {
-    // quando você criar a rota no back, troque esta linha:
-    await api.login(email, password)
-  } catch {
-    // MODO DEV TEMPORÁRIO — REMOVE ANTES DA ENTREGA
-    if (import.meta.env.DEV) {
-      const fake = {
-        token: 'dev-token',
-        user: { id: 'dev-1', name: 'Professor Demo', email, role: 'teacher' as const }
-      }
-      storage.setToken(fake.token)
-      localStorage.setItem('fiap.user', JSON.stringify(fake.user))
-      setUser(fake.user)
-      return
+    const foundUser = MOCK_USERS_DATA.find(
+      (u) => u.email === email && u.password === password
+    );
+
+    if (foundUser) {
+      const fakeToken = `mock-token-${foundUser.id}`;
+
+
+      storage.setToken(fakeToken);
+      
+      const userWithoutPassword: User = {
+          id: foundUser.id,
+          name: foundUser.name,
+          email: foundUser.email,
+          role: foundUser.role,
+      };
+
+      localStorage.setItem('fiap.user', JSON.stringify(userWithoutPassword));
+
+      setUser(userWithoutPassword);
+      return;
+
+    } else {
+      throw new Error('Seu e-mail e/ou senha estão errados.');
     }
-    throw new Error('Seu e-mail ou senha estão errados.')
-  }
 }
   function logout() {
     storage.clear()

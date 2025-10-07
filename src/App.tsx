@@ -10,6 +10,7 @@ import { Login } from './modules/auth/Login'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import styled from 'styled-components'
 import React from 'react'
+import { useAuth } from './modules/auth/AuthContext'
 
 const Container = styled.div`
   max-width: 1100px;
@@ -19,28 +20,30 @@ const Container = styled.div`
 
 function Layout({ children }: { children: React.ReactNode }) {
   const loc = useLocation()
-  let header = 'geral'
-  if(loc.pathname.includes('/create') || loc.pathname.includes('/edit') || loc.pathname.includes('/admin')){
-    header = 'header'
-  } else if (loc.pathname === '/login'){
-    header = ''
+  const { user } = useAuth();
+
+
+  if (loc.pathname === '/login') {
+    return <Container>{children}</Container>;
   }
-  if (header === 'geral') {
+
+
+  if (!user) {
     return (
       <>
         <HeaderGeral />
         <Container>{children}</Container>
       </>
-    )
-  } else if(header === ''){
-    return <Container>{children}</Container>
+    );
   }
+
+
   return (
     <>
       <Header />
       <Container>{children}</Container>
     </>
-  )
+  );
 }
 
 export default function App() {
@@ -51,11 +54,11 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/post/:id" element={<PostRead />} />
 
-        {/* <Route element={<ProtectedRoute />}> */}
+        <Route element={<ProtectedRoute />}>
           <Route path="/create" element={<PostCreate />} />
           <Route path="/edit/:id" element={<PostEdit />} />
           <Route path="/admin" element={<Admin />} />
-        {/* </Route> */}
+        </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useAuth } from './AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -106,19 +106,24 @@ const Footer = styled.div`
 `
 
 export function Login() {
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
+  useEffect(() => {
+    if (user) {
+      navigate('/admin', { replace: true });
+    }
+  }, [user, navigate]);
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setLoading(true); setError(null)
     try {
       await login(email, password)
-      navigate('/admin', { replace: true })
     } catch {
         setError('Seu e-mail e/ou senha estão errados.')
     } finally {
