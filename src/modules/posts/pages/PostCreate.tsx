@@ -46,23 +46,22 @@ const BtnGhost = styled.button`
 `
 
 export function PostCreate() {
-  // ESTADO DOS CAMPOS
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
-  const [disciplina, setDisciplina] = useState('')  // <-- novo
-  const [turma, setTurma] = useState('')            // <-- novo (opcional)
+  const [disciplina, setDisciplina] = useState('')
+  const [turma, setTurma] = useState('')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
-  // SUBMISSÃO (envia todos os campos que o back espera)
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setLoading(true); setError(null)
     try {
       await api.createPost({ title, author, disciplina, turma, content })
-      navigate('/posts') // volta para a lista
+      navigate('/posts')
     } catch (err: any) {
       setError(err.message || 'Falha ao criar atividade')
     } finally {
@@ -72,21 +71,23 @@ export function PostCreate() {
 
   return (
     <Card onSubmit={onSubmit}>
-      <h2 style={{marginTop:0}}>Nova atividade</h2>
+      <div>
+        <h2 style={{marginTop:0, marginBottom:0}}>Nova atividade</h2>
+        <small style={{marginTop:0}}>(*) Campos Obrigatórios</small>
+      </div>
 
-      {/* --- AQUI É O "JSX do formulário" --- */}
       <Field>
-        <label htmlFor="title">Título</label>
+        <label htmlFor="title">Título*</label>
         <input id="title" value={title} onChange={e=>setTitle(e.target.value)} required />
       </Field>
 
       <Field>
-        <label htmlFor="author">Autor</label>
+        <label htmlFor="author">Autor*</label>
         <input id="author" value={author} onChange={e=>setAuthor(e.target.value)} required />
       </Field>
 
       <Field>
-        <label htmlFor="disciplina">Disciplina</label>
+        <label htmlFor="disciplina">Disciplina*</label>
         <input id="disciplina" value={disciplina} onChange={e=>setDisciplina(e.target.value)} required />
       </Field>
 
@@ -96,7 +97,7 @@ export function PostCreate() {
       </Field>
 
       <Field>
-        <label htmlFor="content">Conteúdo</label>
+        <label htmlFor="content">Conteúdo*</label>
         <textarea id="content" value={content} onChange={e=>setContent(e.target.value)} required />
       </Field>
 

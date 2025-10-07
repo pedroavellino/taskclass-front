@@ -9,7 +9,7 @@ const Screen = styled.div`
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  background: #f3f6ff; /* fundo azul bem claro do wireframe */
+  background: #f3f6ff;
   padding: 2rem;
 `
 

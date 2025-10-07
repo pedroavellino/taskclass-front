@@ -1,4 +1,3 @@
-// src/modules/posts/pages/Home.tsx
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "@/services/api";
@@ -19,14 +18,22 @@ const TitleRow = styled.div`
   h1 { margin: 0; font-size: 1.75rem; }
 `;
 
-const NewButton = styled.button`
+const SearchContainer = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const SearchInput = styled.input`
   padding: .6rem .9rem;
   border-radius: 10px;
   border: 1px solid ${({theme}) => theme.colors.border};
-  background-color: #020086;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
+  font-size: .95rem;
+  width: 100%;
+  max-width: 400px;
+  &:focus {
+    outline: none;
+    border-color: #020086;
+    box-shadow: 0 0 0 2px rgba(2,0,134,0.2);
+  }
 `;
 
 const TableWrap = styled.div`
@@ -84,31 +91,51 @@ export function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    let on = true;
-    setLoading(true); setError(null);
-    api.getPosts().then((data) => {
-      if (on) setPosts(data);
-    }).catch((e:any) => setError(e.message || "Erro ao carregar"))
-      .finally(() => setLoading(false));
-    return () => { on = false; };
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 200);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchTerm]);
 
-  function openEdit(p: Post) {
-    navigate(`/edit/${p.id}`);
-  }
-  function newActivity() {
-    navigate(`/create`);
+  useEffect(() => {
+    let on = true; 
+    setLoading(true);
+    setError(null);
+
+    api.getPosts(debouncedSearchTerm)
+      .then((data) => {
+        if (on) setPosts(data);
+      })
+      .catch((e:any) => setError(e.message || "Erro ao carregar as atividades."))
+      .finally(() => setLoading(false));
+
+    return () => { on = false; };
+  }, [debouncedSearchTerm]);
+
+  function openView(p: Post) {
+    navigate(`/post/${p.id}`);
   }
 
   return (
     <Page>
       <TitleRow>
         <h1>Lista de atividades</h1>
-        <NewButton onClick={newActivity}>Nova atividade</NewButton>
       </TitleRow>
+      <SearchContainer>
+        <SearchInput
+          type="text"
+          placeholder="Buscar por título..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </SearchContainer>
 
       <TableWrap role="region" aria-label="Lista de atividades">
         <Table>
@@ -132,11 +159,9 @@ export function Home() {
             )}
             {!loading && !error && posts.map((p) => (
               <tr key={p.id} tabIndex={0}
-                  onClick={() => openEdit(p)}
-                  onKeyDown={(e)=>{ if(e.key==='Enter'||e.key===' ') openEdit(p) }}>
+                  onClick={() => openView(p)}
+                  onKeyDown={(e)=>{ if(e.key==='Enter'||e.key===' ') openView(p) }}>
                 <td style={{fontWeight:600}}>{p.title}</td>
-                {/* usamos createdAt por enquanto como "Data de entrega";
-                   quando seu back trouxer "dueDate", basta trocar para p.dueDate */}
                 <td>{formatDate(p.createdAt)}</td>
                 <td>{p.disciplina ?? "—"}</td>
                 <td>{p.author ?? "—"}</td>

@@ -21,7 +21,7 @@ const Field = styled.div`
     padding: .7rem .9rem;
     border-radius: 10px;
     border: 1px solid ${({theme}) => theme.colors.border};
-    background: #0f1630;
+    background: #f2f4fa;
     color: ${({theme}) => theme.colors.text};
   }
   textarea { min-height: 220px; }
@@ -33,6 +33,7 @@ const Button = styled.button`
   background: ${({theme}) => theme.colors.primary};
   color: #0b0f1a;
   font-weight: 600;
+  cursor: pointer
 `
 
 export function PostEdit() {
@@ -51,8 +52,8 @@ export function PostEdit() {
     if (!id || !post) return
     setLoading(true); setError(null)
     try {
-      await api.updatePost(id, { title: post.title, author: post.author, content: post.content })
-      navigate(`/post/${id}`)
+      await api.updatePost(id, { title: post.title, author: post.author, content: post.content,  disciplina: post.disciplina })
+      navigate(`/admin`)
     } catch (err: any) {
       setError(err.message || 'Falha ao salvar')
     } finally {
@@ -68,6 +69,10 @@ export function PostEdit() {
       <Field>
         <label htmlFor="title">Título</label>
         <input id="title" value={post.title} onChange={e=>setPost({...post, title: e.target.value})} required />
+      </Field>
+      <Field>
+        <label htmlFor="disciplina">Disciplina</label>
+        <input id="disciplina" value={post.disciplina} onChange={e=>setPost({...post, disciplina: e.target.value})} required />
       </Field>
       <Field>
         <label htmlFor="author">Autor</label>

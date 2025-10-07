@@ -13,6 +13,30 @@ const Article = styled.article`
   gap: .75rem;
 `
 
+const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  gap: 1rem; 
+
+  @media (max-width: 650px) { 
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+`;
+
+const DisciplineText = styled.small`
+  font-size: 1.1em; 
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  @media (max-width: 650px) {
+    white-space: normal;
+    font-size: 1em;
+  }
+`;
+
 export function PostRead() {
   const { id } = useParams()
   const [post, setPost] = useState<Post | null>(null)
@@ -25,8 +49,11 @@ export function PostRead() {
 
   return (
     <Article>
-      <h1>{post.title}</h1>
-      <small>por {post.author}</small>
+      <HeaderContainer>
+        <h1>{post.title}</h1>
+        <DisciplineText>{post.disciplina}</DisciplineText>
+      </HeaderContainer>
+      <small>Por {post.author}</small>
       <div aria-label="conteúdo do post">
         <p style={{whiteSpace:'pre-wrap'}}>{post.content}</p>
       </div>

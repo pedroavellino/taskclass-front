@@ -1,6 +1,7 @@
 // src/App.tsx
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Header } from './components/Header'
+import { HeaderGeral } from './components/HeaderGeral'
 import { Home } from './modules/posts/pages/Home'
 import { PostRead } from './modules/posts/pages/PostRead'
 import { PostCreate } from './modules/posts/pages/PostCreate'
@@ -19,10 +20,21 @@ const Container = styled.div`
 
 function Layout({ children }: { children: React.ReactNode }) {
   const loc = useLocation()
-  const isLogin = loc.pathname === '/'
-  if (isLogin) {
-    // Sem Header e sem Container: a tela de login ocupa 100% (full-bleed)
-    return <>{children}</>
+  let header = 'geral'
+  if(loc.pathname.includes('/create') || loc.pathname.includes('/edit') || loc.pathname.includes('/admin')){
+    header = 'header'
+  } else if (loc.pathname === '/login'){
+    header = ''
+  }
+  if (header === 'geral') {
+    return (
+      <>
+        <HeaderGeral />
+        <Container>{children}</Container>
+      </>
+    )
+  } else if(header === ''){
+    return <Container>{children}</Container>
   }
   return (
     <>
@@ -37,16 +49,16 @@ export default function App() {
     <Layout>
       {/* Login como página inicial */}
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/post/:id" element={<PostRead />} />
 
         {/* Rotas protegidas */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/posts" element={<Home />} />
-          <Route path="/post/:id" element={<PostRead />} />
+        {/* <Route element={<ProtectedRoute />}> */}
           <Route path="/create" element={<PostCreate />} />
           <Route path="/edit/:id" element={<PostEdit />} />
           <Route path="/admin" element={<Admin />} />
-        </Route>
+        {/* </Route> */}
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
