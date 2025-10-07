@@ -1,0 +1,26 @@
+# --- DEPENDÊNCIAS ---
+node_modules/
+dist/
+.vite/
+
+# --- AMBIENTES E CONFIGS ---
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+
+# --- BUILD E TEMPORÁRIOS ---
+*.log
+.DS_Store
+*.tmp
+coverage/
+.idea/
+.vscode/
+*.tsbuildinfo
+
+# --- SISTEMA ---
+Thumbs.db
+*.swp
+*.swo
+*.bak
