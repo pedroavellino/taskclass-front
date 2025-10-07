@@ -118,7 +118,7 @@ export function Login() {
     setLoading(true); setError(null)
     try {
       await login(email, password)
-      navigate('/posts', { replace: true })
+      navigate('/admin', { replace: true })
     } catch {
         setError('Seu e-mail e/ou senha estão errados.')
     } finally {
