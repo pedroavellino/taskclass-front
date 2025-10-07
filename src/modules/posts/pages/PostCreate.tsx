@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react'
 import styled from 'styled-components'
 import { api } from '@/services/api'
 import { useNavigate } from 'react-router-dom'
+import { IoArrowBackOutline } from 'react-icons/io5';
 
 const Card = styled.form`
   max-width: 860px;
@@ -44,6 +45,23 @@ const BtnGhost = styled.button`
   background: #ffd0d5; color: #3c0d15; font-weight: 700; cursor: pointer;
 `
 
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({theme}) => theme.colors.text};
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+
+  &:hover {
+    color: ${({theme}) => theme.colors.primary};
+  }
+`;
+
 export function PostCreate() {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
@@ -69,6 +87,11 @@ export function PostCreate() {
   }
 
   return (
+    <>
+    <BackButton onClick={() => navigate(-1)}>
+        <IoArrowBackOutline />
+        Voltar
+    </BackButton>
     <Card onSubmit={onSubmit}>
       <div>
         <h2 style={{marginTop:0, marginBottom:0}}>Nova atividade</h2>
@@ -104,8 +127,9 @@ export function PostCreate() {
 
       <Row>
         <BtnPrimary disabled={loading}>{loading ? 'Publicando…' : 'Publicar'}</BtnPrimary>
-        <BtnGhost type="button" onClick={()=>navigate(-1)}>Voltar</BtnGhost>
+        <BtnGhost type="button" onClick={()=>navigate(-1)}>Cancelar</BtnGhost>
       </Row>
     </Card>
+    </>
   )
 }

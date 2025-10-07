@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { api } from '@/services/api'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Post } from '@/types'
+import { IoArrowBackOutline } from 'react-icons/io5';
 
 const Card = styled.form`
   max-width: 680px;
@@ -36,6 +37,23 @@ const Button = styled.button`
   cursor: pointer
 `
 
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({theme}) => theme.colors.text};
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+
+  &:hover {
+    color: ${({theme}) => theme.colors.primary};
+  }
+`;
+
 export function PostEdit() {
   const { id } = useParams()
   const [post, setPost] = useState<Post | null>(null)
@@ -64,6 +82,11 @@ export function PostEdit() {
   if (!post) return <p>Carregando...</p>
 
   return (
+    <>
+    <BackButton onClick={() => navigate(-1)}>
+        <IoArrowBackOutline />
+        Voltar
+    </BackButton>
     <Card onSubmit={onSubmit}>
       <h2>Editar Post</h2>
       <Field>
@@ -85,5 +108,6 @@ export function PostEdit() {
       {error && <p role="alert" style={{color:'#ff8080'}}>{error}</p>}
       <Button disabled={loading}>{loading ? 'Salvando...' : 'Salvar alterações'}</Button>
     </Card>
+    </>
   )
 }

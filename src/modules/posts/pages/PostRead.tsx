@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '@/services/api'
 import type { Post } from '@/types'
 import styled from 'styled-components'
+import { IoArrowBackOutline } from 'react-icons/io5';
 
 const Article = styled.article`
   border: 1px solid ${({theme}) => theme.colors.border};
@@ -37,8 +38,26 @@ const DisciplineText = styled.small`
   }
 `;
 
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({theme}) => theme.colors.text};
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+
+  &:hover {
+    color: ${({theme}) => theme.colors.primary};
+  }
+`;
+
 export function PostRead() {
   const { id } = useParams()
+  const navigate = useNavigate();
   const [post, setPost] = useState<Post | null>(null)
 
   useEffect(() => {
@@ -48,6 +67,11 @@ export function PostRead() {
   if (!post) return <p>Carregando...</p>
 
   return (
+    <>
+    <BackButton onClick={() => navigate(-1)}>
+        <IoArrowBackOutline />
+        Voltar
+    </BackButton>
     <Article>
       <HeaderContainer>
         <h1>{post.title}</h1>
@@ -58,5 +82,6 @@ export function PostRead() {
         <p style={{whiteSpace:'pre-wrap'}}>{post.content}</p>
       </div>
     </Article>
+    </>
   )
 }
