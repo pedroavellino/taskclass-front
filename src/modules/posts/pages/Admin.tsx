@@ -244,7 +244,7 @@ export function Admin() {
       <SearchContainer>
         <SearchInput
           type="text"
-          placeholder="Buscar por título..."
+          placeholder="Buscar por título ou descrição..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -254,8 +254,8 @@ export function Admin() {
         <Table>
           <thead>
             <tr>
-              <th style={{width:'45%'}}>Título</th>
-              <th style={{width:'20%'}}>Data de Entrega</th>
+              <th style={{width:'30%'}}>Título</th>
+              <th style={{width:'35%'}}>Descrição</th>
               <th style={{width:'20%'}}>Disciplina</th>
               <th style={{width:'15%'}}>Autor</th>
               <th style={{width:'10%', textAlign: 'center'}}>Ações</th>
@@ -274,7 +274,7 @@ export function Admin() {
             {!loading && !error && posts.map((p) => (
               <tr key={p.id}>
                 <td style={{fontWeight:600}} onClick={() => openView(p)} tabIndex={0}>{p.title}</td>
-                <td>{formatDate(p.createdAt)}</td>
+                <td>{p.content.slice(0, 40)}...</td>
                 <td>{p.disciplina ?? "—"}</td>
                 <td>{p.author ?? "—"}</td>
                 <ActionsCell>

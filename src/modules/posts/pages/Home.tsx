@@ -131,7 +131,7 @@ export function Home() {
       <SearchContainer>
         <SearchInput
           type="text"
-          placeholder="Buscar por título..."
+          placeholder="Buscar por título ou descrição..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -141,8 +141,8 @@ export function Home() {
         <Table>
           <thead>
             <tr>
-              <th style={{width:'45%'}}>Título</th>
-              <th style={{width:'20%'}}>Data de Entrega</th>
+              <th style={{width:'30%'}}>Título</th>
+              <th style={{width:'35%'}}>Descrição</th>
               <th style={{width:'20%'}}>Disciplina</th>
               <th style={{width:'15%'}}>Autor</th>
             </tr>
@@ -162,7 +162,7 @@ export function Home() {
                   onClick={() => openView(p)}
                   onKeyDown={(e)=>{ if(e.key==='Enter'||e.key===' ') openView(p) }}>
                 <td style={{fontWeight:600}}>{p.title}</td>
-                <td>{formatDate(p.createdAt)}</td>
+                <td>{p.content.slice(0, 40)}...</td>
                 <td>{p.disciplina ?? "—"}</td>
                 <td>{p.author ?? "—"}</td>
               </tr>
