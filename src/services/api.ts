@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://task-class-api-latest.onrender.com'
 const JWT_KEY = import.meta.env.VITE_JWT_STORAGE_KEY || 'fiap.jwt'
 
 
