@@ -1,4 +1,3 @@
-// src/App.tsx
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Header } from './components/Header'
 import { HeaderGeral } from './components/HeaderGeral'
@@ -47,13 +46,11 @@ function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <Layout>
-      {/* Login como página inicial */}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/post/:id" element={<PostRead />} />
 
-        {/* Rotas protegidas */}
         {/* <Route element={<ProtectedRoute />}> */}
           <Route path="/create" element={<PostCreate />} />
           <Route path="/edit/:id" element={<PostEdit />} />

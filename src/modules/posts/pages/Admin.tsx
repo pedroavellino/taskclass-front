@@ -88,30 +88,30 @@ const Table = styled.table`
     box-shadow: inset 0 0 0 2px ${({theme}) => theme.colors.ring};
   }
 
-  @media (max-width: 650px) { /* Exemplo de breakpoint para tablets e celulares */
-    thead th:nth-child(2), /* Data de Entrega */
-    thead th:nth-child(3), /* Disciplina */
-    thead th:nth-child(4) { /* Autor */
+  @media (max-width: 650px) { 
+    thead th:nth-child(2), 
+    thead th:nth-child(3),
+    thead th:nth-child(4) {
       display: none;
     }
 
-    tbody td:nth-child(2), /* Data de Entrega */
-    tbody td:nth-child(3), /* Disciplina */
-    tbody td:nth-child(4) { /* Autor */
+    tbody td:nth-child(2),
+    tbody td:nth-child(3),
+    tbody td:nth-child(4) {
       display: none;
     }
 
-    thead th:nth-child(1), /* Título */
-    tbody td:nth-child(1) { /* Título */
+    thead th:nth-child(1),
+    tbody td:nth-child(1) {
       width: 50% !important;
-      text-align: left !important; /* Garante alinhamento à esquerda */
+      text-align: left !important;
     }
 
-    thead th:nth-child(5), /* Ações */
-    tbody td:nth-child(5) { /* Ações */
+    thead th:nth-child(5),
+    tbody td:nth-child(5) {
       width: 50% !important;
-      text-align: left !important; /* Garante alinhamento à direita */
-      justify-content: flex-end; /* Para o ActionsCell, que é flex */
+      text-align: left !important;
+      justify-content: flex-end;
     }
   }
 `;
@@ -128,17 +128,17 @@ const ActionButton = styled.button`
   cursor: pointer;
   padding: .4rem;
   margin: 0 .2rem;
-  font-size: 1.1rem; /* Tamanho dos ícones */
+  font-size: 1.1rem;
   color: ${({theme}) => theme.colors.muted};
   transition: color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    color: #020086; /* Cor ao passar o mouse para o lápis */
+    color: #020086;
     transform: scale(1.1);
   }
 
   &.delete-button:hover {
-    color: #dc3545; /* Cor ao passar o mouse para a lixeira */
+    color: #dc3545;
   }
 
   &:focus {
@@ -155,8 +155,8 @@ const ActionButton = styled.button`
 
 const ActionsCell = styled.td`
   display: flex;
-  gap: 0.5rem; /* Espaçamento entre os botões */
-  justify-content: flex-end; /* Alinha os botões à direita */
+  gap: 0.5rem;
+  justify-content: flex-end;
   align-items: center;
 `;
 
@@ -227,9 +227,7 @@ export function Admin() {
   async function handleDelete(id: string) {
     if (window.confirm("Tem certeza que deseja excluir esta atividade?")) {
       try {
-        // Assumindo que você tem uma função deletePost na sua API
         await api.deletePost(id);
-        // Após deletar, atualiza a lista de posts
         fetchPosts(debouncedSearchTerm);
       } catch (e: any) {
         alert("Erro ao excluir a atividade: " + (e.message || ""));
@@ -279,23 +277,21 @@ export function Admin() {
                 <td>{formatDate(p.createdAt)}</td>
                 <td>{p.disciplina ?? "—"}</td>
                 <td>{p.author ?? "—"}</td>
-                <ActionsCell> {/* Nova célula para os botões de ação */}
+                <ActionsCell>
                   <ActionButton 
                     onClick={() => openEdit(p)} 
                     aria-label={`Editar atividade ${p.title}`}
-                    title="Editar" // Tooltip
+                    title="Editar"
                   >
-                    {/* Se estiver usando react-icons: <FaEdit /> */}
-                    ✏️ {/* Ícone de lápis (emoji ou SVG) */}
+                    ✏️
                   </ActionButton>
                   <ActionButton 
-                    className="delete-button" // Classe para estilização específica de hover
+                    className="delete-button"
                     onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} 
                     aria-label={`Excluir atividade ${p.title}`}
-                    title="Excluir" // Tooltip
+                    title="Excluir"
                   >
-                    {/* Se estiver usando react-icons: <FaTrash /> */}
-                    🗑️ {/* Ícone de lixeira (emoji ou SVG) */}
+                    🗑️
                   </ActionButton>
                 </ActionsCell>
               </tr>

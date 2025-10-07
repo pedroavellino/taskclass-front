@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 import styled from "styled-components";
 import { useAuth } from "@/modules/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -70,7 +69,6 @@ export function Header() {
     <Bar role="navigation" aria-label="barra superior">
       <Inner>
         <Left>
-          {/* Ícone perfil */}
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 12c2.76 0 5-2.69 5-6s-2.24-5-5-5-5 2.69-5 6 2.24 5 5 5zm0 2c-4.42 0-8 2.24-8 5v2h16v-2c0-2.76-3.58-5-8-5z"/>
           </svg>
@@ -78,7 +76,6 @@ export function Header() {
         </Left>
 
         <Center aria-label="TaskClass">
-          {/* Chapéu de formatura */}
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 3L1 8l11 5 9-4.09V14h2V8L12 3zM3 13v3c0 .55.45 1 1 1h7v-2H5v-2H3z" />
           </svg>
@@ -87,7 +84,6 @@ export function Header() {
 
         <Right>
           <IconButton onClick={handleLogout} aria-label="Sair">
-            {/* Ícone logout */}
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M10 17l1.41-1.41L8.83 13H21v-2H8.83l2.58-2.59L10 7l-5 5 5 5zM4 19h6v-2H4V7h6V5H4a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>

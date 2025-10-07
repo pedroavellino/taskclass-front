@@ -1,10 +1,8 @@
-// src/modules/auth/Login.tsx
 import { FormEvent, useState } from 'react'
 import styled from 'styled-components'
 import { useAuth } from './AuthContext'
 import { useNavigate } from 'react-router-dom'
 
-/* ====== Estilos ====== */
 const Screen = styled.div`
   min-height: 100dvh;
   display: grid;
@@ -32,13 +30,13 @@ const Header = styled.div`
   h1 {
     margin: 0;
     font-size: 1.15rem;
-    color: #0f172a; /* quase preto */
+    color: #0f172a;
     font-weight: 700;
     letter-spacing: 0.2px;
   }
   p {
     margin: 0;
-    color: #475569; /* cinza texto */
+    color: #475569;
     font-size: 0.92rem;
   }
 `
@@ -65,7 +63,7 @@ const FieldBlock = styled.div`
     padding: 0.85rem 1rem;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
-    background: #e9edf3; /* cinza claro do wireframe */
+    background: #e9edf3;
     color: #0f172a;
     outline: none;
   }
@@ -80,8 +78,8 @@ const FieldBlock = styled.div`
 const Button = styled.button`
   padding: 0.85rem 1rem;
   border-radius: 10px;
-  border: 1px solid #0b1320; /* borda escura sutil */
-  background: #0b1320;       /* botão preto/azulado */
+  border: 1px solid #0b1320;
+  background: #0b1320;
   color: #ffffff;
   font-weight: 700;
   cursor: pointer;
@@ -107,7 +105,6 @@ const Footer = styled.div`
   svg { width: 18px; height: 18px; opacity: .9; }
 `
 
-/* ====== Component ====== */
 export function Login() {
   const { login } = useAuth()
   const [email, setEmail] = useState('')
@@ -135,7 +132,6 @@ export function Login() {
       <Card onSubmit={onSubmit} aria-describedby={error ? 'login-err' : undefined}>
         <Header>
           <Brand>
-            {/* chapéu de formatura (SVG inline) */}
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 3L1 8l11 5 9-4.09V14h2V8L12 3zM3 13v3c0 .55.45 1 1 1h7v-2H5v-2H3z" />
             </svg>
@@ -187,7 +183,6 @@ export function Login() {
         <Divider />
 
         <Footer aria-label="descrição da plataforma">
-          {/* ícone livro/caderno */}
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M18 2H8a2 2 0 00-2 2v16a2 2 0 012-2h10v2h2V4a2 2 0 00-2-2zm0 14H8a.99.99 0 00-1 .99V4a1 1 0 011-1h10v13z" />
           </svg>

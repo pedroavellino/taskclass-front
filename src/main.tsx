@@ -9,7 +9,7 @@ import { AuthProvider } from './modules/auth/AuthContext'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <GlobalStyle />
+      <GlobalStyle theme={theme} />
       <AuthProvider>
         <BrowserRouter>
           <App />

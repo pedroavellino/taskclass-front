@@ -1,16 +1,14 @@
-// src/styles/theme.ts
 import { createGlobalStyle, type DefaultTheme } from "styled-components";
 
 export const theme: DefaultTheme = {
   colors: {
-    // Paleta clara da "home1"
-    bg: "#f3f6ff",      // fundo da página
-    card: "#ffffff",    // cartões/containers
-    text: "#0f172a",    // texto principal (quase preto)
-    muted: "#475569",   // texto secundário
-    primary: "#3b5bfd", // botões/destaques (azul arroxeado)
-    border: "#e6e8f0",  // bordas suaves
-    ring: "#3b5bfd",    // foco/hover
+    bg: "#f3f6ff",      
+    card: "#ffffff",    
+    text: "#0f172a",   
+    muted: "#475569",  
+    primary: "#3b5bfd", 
+    border: "#e6e8f0", 
+    ring: "#3b5bfd", 
   },
   radius: "16px",
 };

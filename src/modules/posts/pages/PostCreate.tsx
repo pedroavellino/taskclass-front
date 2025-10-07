@@ -1,4 +1,3 @@
-// src/modules/posts/pages/PostCreate.tsx
 import { FormEvent, useState } from 'react'
 import styled from 'styled-components'
 import { api } from '@/services/api'

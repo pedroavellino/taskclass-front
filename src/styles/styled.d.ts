@@ -1,6 +1,5 @@
 import 'styled-components';
 
-// Extenda a interface DefaultTheme
 declare module 'styled-components' {
     export interface DefaultTheme {
         colors: {
