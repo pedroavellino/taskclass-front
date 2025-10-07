@@ -12,7 +12,6 @@ const Screen = styled.div`
 `
 
 const Card = styled.form`
-  width: min(420px, 92vw);
   display: grid;
   gap: 1rem;
   padding: 1.25rem 1.25rem 0.75rem;
@@ -27,6 +26,7 @@ const Header = styled.div`
   place-items: center;
   gap: 0.4rem;
   padding-top: 0.25rem;
+  text-align: center;
   h1 {
     margin: 0;
     font-size: 1.15rem;
@@ -98,6 +98,7 @@ const Divider = styled.hr`
 const Footer = styled.div`
   display: flex;
   align-items: center;
+  text-align: center;
   gap: .5rem;
   color: #475569;
   font-size: 0.85rem;
