@@ -78,7 +78,7 @@ export function PostCreate() {
     setLoading(true); setError(null)
     try {
       await api.createPost({ title, author, disciplina, turma, content })
-      navigate('/posts')
+      navigate('/admin')
     } catch (err: any) {
       setError(err.message || 'Falha ao criar atividade')
     } finally {
