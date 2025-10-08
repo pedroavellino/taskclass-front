@@ -8,13 +8,13 @@ Interface web para a aplicação de blogging do Tech Challenge (Fase 3 — Front
 - styled-components
 - TypeScript
 - Fetch API (wrapper simples)
-- Auth via JWT (contexto de autenticação)
+- Auth via contexto de autenticação (mock de usuários e token local)
 - Docker (Nginx) + GitHub Actions (CI)
 
 ## 📁 Estrutura
 ```
 src/
-  components/          # Header, PostCard, SearchBar, ProtectedRoute
+  components/          # Header, HeaderGeral, ProtectedRoute
   modules/
     auth/              # AuthContext e Login
     posts/pages/       # Home, PostRead, PostCreate, PostEdit, Admin
@@ -39,12 +39,12 @@ npm run dev
 Acesse http://localhost:5173
 
 ## 🔐 Autenticação & Autorização
-- `POST /auth/login` → `{ token, user }`
-- O token é salvo em `localStorage` e incluído via `Authorization: Bearer ...`.
+- Login mockado via `AuthContext` utilizando `mockUsers.ts` (sem integração real com back-end).
+- Um token fictício é salvo em `localStorage` apenas para simular persistência de sessão.
 - Rotas protegidas: `/create`, `/edit/:id`, `/admin` (usam `<ProtectedRoute/>`).
 
 ## 🌐 Endpoints esperados do back-end
-- `GET /posts?q=...` → lista
+- `GET /posts/search?search=...` → busca
 - `GET /posts/:id` → detalhe
 - `POST /posts` → cria (autenticado)
 - `PUT /posts/:id` → atualiza (autenticado)
@@ -58,7 +58,7 @@ Acesse http://localhost:5173
 - Contraste alto e navegação por teclado.
 
 ## 📱 Responsividade
-- Grid fluido em `Home` (cards responsivos).
+- Grid fluido em `Home` (tabela responsiva).
 - Formulários com largura máxima e padding adequado.
 
 ## 🧪 Dicas de testes
