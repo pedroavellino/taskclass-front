@@ -8,18 +8,58 @@ const Page = styled.div`
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1rem 3rem;
-`;
-
-const TitleRow = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 0 1rem 0;
-  h1 { margin: 0; font-size: 1.75rem; }
+  flex-direction: column;
+  gap: 2rem;
 `;
 
-const SearchContainer = styled.div`
-  margin-bottom: 1.5rem;
+const Hero = styled.div`
+  padding: 2rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+  }
+
+  p {
+    margin: 0.5rem 0 0;
+    opacity: 0.85;
+    font-size: 0.95rem;
+  }
+`;
+
+const Actions = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const ActionButton = styled.button`
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  color: #0f172a;
+  transition: 0.2s;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const SearchInput = styled.input`
@@ -29,6 +69,7 @@ const SearchInput = styled.input`
   font-size: .95rem;
   width: 100%;
   max-width: 400px;
+
   &:focus {
     outline: none;
     border-color: #020086;
@@ -39,37 +80,38 @@ const SearchInput = styled.input`
 const TableWrap = styled.div`
   border: 1px solid ${({theme}) => theme.colors.border};
   background: ${({theme}) => theme.colors.card};
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(16,24,40,.06);
+  box-shadow: 0 12px 30px rgba(16,24,40,.08);
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+
   thead th {
     text-align: left;
     font-weight: 700;
-    font-size: .95rem;
-    color: ${({theme}) => theme.colors.muted};
-    padding: .9rem 1rem;
+    font-size: .9rem;
+    padding: 1rem;
     border-bottom: 1px solid ${({theme}) => theme.colors.border};
-    background: #fafbff;
+    background: #f8fafc;
   }
+
   tbody td {
-    padding: .9rem 1rem;
+    padding: 1rem;
     border-bottom: 1px solid ${({theme}) => theme.colors.border};
   }
+
   tbody tr:last-child td { border-bottom: none; }
+
   tbody tr {
     cursor: pointer;
-    outline: none;
+    transition: 0.15s;
   }
+
   tbody tr:hover {
-    background: #f6f7ff;
-  }
-  tbody tr:focus-visible {
-    box-shadow: inset 0 0 0 2px ${({theme}) => theme.colors.ring};
+    background: #f1f5ff;
   }
 `;
 
@@ -77,15 +119,6 @@ const Empty = styled.div`
   padding: 2rem;
   color: ${({theme}) => theme.colors.muted};
 `;
-
-function formatDate(iso?: string) {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("pt-BR", {
-      day: "2-digit", month: "short", year: "numeric",
-    });
-  } catch { return "—"; }
-}
 
 export function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -99,13 +132,11 @@ export function Home() {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 200);
-    return () => {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [searchTerm]);
 
   useEffect(() => {
-    let on = true; 
+    let on = true;
     setLoading(true);
     setError(null);
 
@@ -125,51 +156,65 @@ export function Home() {
 
   return (
     <Page>
-      <TitleRow>
-        <h1>Lista de atividades</h1>
-      </TitleRow>
-      <SearchContainer>
+
+      <Hero>
+        <div>
+          <h1>Atividades Educacionais</h1>
+          <p>Gerencie, visualize e organize suas atividades.</p>
+        </div>
+
+        <Actions>
+          <ActionButton onClick={() => navigate("/turmas")}>
+            Turmas
+          </ActionButton>
+          <ActionButton onClick={() => navigate("/turmas")}>
+             Caderneta
+          </ActionButton>
+        </Actions>
+      </Hero>
+
+      <Section>
         <SearchInput
           type="text"
           placeholder="Buscar por título ou descrição..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-      </SearchContainer>
 
-      <TableWrap role="region" aria-label="Lista de atividades">
-        <Table>
-          <thead>
-            <tr>
-              <th style={{width:'30%'}}>Título</th>
-              <th style={{width:'35%'}}>Descrição</th>
-              <th style={{width:'20%'}}>Disciplina</th>
-              <th style={{width:'15%'}}>Autor</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan={4}><Empty>Carregando…</Empty></td></tr>
-            )}
-            {error && !loading && (
-              <tr><td colSpan={4}><Empty role="alert">{error}</Empty></td></tr>
-            )}
-            {!loading && !error && posts.length === 0 && (
-              <tr><td colSpan={4}><Empty>Nenhuma atividade ainda.</Empty></td></tr>
-            )}
-            {!loading && !error && posts.map((p) => (
-              <tr key={p.id} tabIndex={0}
-                  onClick={() => openView(p)}
-                  onKeyDown={(e)=>{ if(e.key==='Enter'||e.key===' ') openView(p) }}>
-                <td style={{fontWeight:600}}>{p.title}</td>
-                <td>{p.content.slice(0, 40)}...</td>
-                <td>{p.disciplina ?? "—"}</td>
-                <td>{p.author ?? "—"}</td>
+        <TableWrap>
+          <Table>
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Descrição</th>
+                <th>Disciplina</th>
+                <th>Autor</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      </TableWrap>
+            </thead>
+            <tbody>
+              {loading && (
+                <tr><td colSpan={4}><Empty>Carregando…</Empty></td></tr>
+              )}
+              {error && !loading && (
+                <tr><td colSpan={4}><Empty role="alert">{error}</Empty></td></tr>
+              )}
+              {!loading && !error && posts.length === 0 && (
+                <tr><td colSpan={4}><Empty>Nenhuma atividade ainda.</Empty></td></tr>
+              )}
+              {!loading && !error && posts.map((p) => (
+                <tr key={p.id}
+                  onClick={() => openView(p)}>
+                  <td style={{fontWeight:600}}>{p.title}</td>
+                  <td>{p.content.slice(0, 40)}...</td>
+                  <td>{p.disciplina ?? "—"}</td>
+                  <td>{p.author ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableWrap>
+      </Section>
+
     </Page>
   );
 }

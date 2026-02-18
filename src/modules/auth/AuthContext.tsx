@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { User } from '@/types/index'
 import { storage } from '@/services/api'
-import { MOCK_USERS_DATA } from '@/services/mockUsers'
 
 type Ctx = {
   user: User | null
   login: (email: string, password: string) => Promise<void>
   logout: () => void
 }
+
 const AuthContext = createContext<Ctx | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -16,45 +16,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem(storage.key)
     const userCache = localStorage.getItem('fiap.user')
+
     if (token && userCache) {
       try {
-        const parsedUser = JSON.parse(userCache);
-        setUser(parsedUser);
+        const parsedUser = JSON.parse(userCache)
+        setUser(parsedUser)
       } catch (e) {
-        console.error("Erro ao parsear dados do usuário do localStorage:", e);
-        storage.clear();
-        localStorage.removeItem('fiap.user');
+        storage.clear()
+        localStorage.removeItem('fiap.user')
       }
     }
-  }, []);
+  }, [])
 
   async function login(email: string, password: string) {
-    const foundUser = MOCK_USERS_DATA.find(
-      (u) => u.email === email && u.password === password
-    );
+    const response = await fetch(
+      "https://task-class-api-latest.onrender.com/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          senha: password,
+        }),
+      }
+    )
+    console.log("Status:", response.status)
 
-    if (foundUser) {
-      const fakeToken = `mock-token-${foundUser.id}`;
-
-
-      storage.setToken(fakeToken);
-      
-      const userWithoutPassword: User = {
-          id: foundUser.id,
-          name: foundUser.name,
-          email: foundUser.email,
-          role: foundUser.role,
-      };
-
-      localStorage.setItem('fiap.user', JSON.stringify(userWithoutPassword));
-
-      setUser(userWithoutPassword);
-      return;
-
-    } else {
-      throw new Error('Seu e-mail e/ou senha estão errados.');
+    if (!response.ok) {
+      throw new Error("Seu e-mail e/ou senha estão errados.")
     }
-}
+
+    const data = await response.json()
+
+    storage.setToken(data.access_token)
+
+    const userData: User = {
+      id: email,
+      name: email,
+      email,
+      role: "teacher", 
+    }
+
+    localStorage.setItem('fiap.user', JSON.stringify(userData))
+    setUser(userData)
+  }
+
   function logout() {
     storage.clear()
     localStorage.removeItem('fiap.user')
@@ -62,7 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const value = useMemo(() => ({ user, login, logout }), [user])
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {
