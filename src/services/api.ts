@@ -65,8 +65,14 @@ function toBack(p: Partial<Post>): BackPost {
 
 export const api = {
   
-  async login(_email: string, _password: string) {
-    throw new Error('Rota de login não está implementada no back.')
+  async login(email: string, senha: string) {
+    const data = await request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, senha }),
+    })
+    storage.setToken(data.access_token)
+
+    return data
   },
 
   async getPosts(q?: string, { limit = 20, page = 1 } = {}) {
