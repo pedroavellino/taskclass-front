@@ -45,15 +45,16 @@ const StatusButtons = styled.div`
   gap: 0.5rem;
 `
 
-const StatusButton = styled.button<{ $active?: boolean; $danger?: boolean }>`
+const StatusButton = styled.button<{ $active?: boolean; $danger?: boolean; $warning?: boolean }>`
   padding: 0.3rem 0.8rem;
   border-radius: 6px;
-  border: 1px solid ${({ $danger }) => ($danger ? "#dc2626" : "#2563eb")};
-  background: ${({ $active, $danger }) =>
-    $active ? ($danger ? "#dc2626" : "#2563eb") : "white"};
+  border: 1px solid ${({ $danger, $warning }) => ($danger ? "#dc2626" : $warning ? "#ea580c" : "#2563eb")};
+  background: ${({ $active, $danger, $warning }) =>
+    $active ? ($danger ? "#dc2626" : $warning ? "#ea580c" : "#2563eb") : "white"};
   color: ${({ $active }) => ($active ? "white" : undefined)};
   cursor: pointer;
   font-weight: 600;
+  transition: all 0.2s ease-in-out;
 `
 const SaveButton = styled.button`
   align-self: flex-end;
@@ -101,7 +102,6 @@ export function PresencaTurma() {
     carregarAlunos()
   }, [turmaId])
 
-  // Carregar Presenças já existentes
   useEffect(() => {
     async function carregarPresencas() {
       if (!turmaId) return;
@@ -114,11 +114,8 @@ export function PresencaTurma() {
         const lista = response.data || []
 
         lista.forEach((p: any) => {
-          // O Mongo salva a data assim: "2026-02-18T00:00:00.000Z"
-          // O split('T')[0] corta tudo depois do T, deixando só "2026-02-18"
           const dataDaPresenca = p.data ? p.data.split('T')[0] : "";
 
-          // O FILTRO MÁGICO: Só processa se a data bater com a do calendário
           if (dataDaPresenca === dataSelecionada) {
             const idAluno = p.alunoId?._id || p.alunoId
             const idPresenca = p._id || p.id
@@ -153,7 +150,6 @@ export function PresencaTurma() {
     setLoading(true)
     
     try {
-      // Tenta extrair o Mongo ID da turma de forma blindada
       let realTurmaId = turmaId;
       if (alunos.length > 0 && alunos[0].turmaId) {
         const tId = alunos[0].turmaId as any;
@@ -178,7 +174,6 @@ export function PresencaTurma() {
             status: status.toLowerCase(),
           }
           
-          // A NOSSA LUPA: Vai mostrar exatamente o que estamos enviando
           console.log("Enviando POST (Criar Nova Presença):", payload);
 
           await api.salvarPresenca(payload)
@@ -220,21 +215,29 @@ export function PresencaTurma() {
               <span>{aluno.nome}</span>
 
               <StatusButtons>
-                <StatusButton
-                  $active={presencas[id] === "PRESENTE"}
-                  onClick={() => marcarPresenca(id, "PRESENTE")}
-                >
-                  Presente
-                </StatusButton>
+              <StatusButton
+                $active={presencas[id] === "PRESENTE"}
+                onClick={() => marcarPresenca(id, "PRESENTE")}
+              >
+                Presente
+              </StatusButton>
 
-                <StatusButton
-                  $danger
-                  $active={presencas[id] === "FALTA"}
-                  onClick={() => marcarPresenca(id, "FALTA")}
-                >
-                  Faltou
-                </StatusButton>
-              </StatusButtons>
+              <StatusButton
+                $danger
+                $active={presencas[id] === "FALTA"}
+                onClick={() => marcarPresenca(id, "FALTA")}
+              >
+                Faltou
+              </StatusButton>
+
+              <StatusButton
+                $warning
+                $active={presencas[id] === "JUSTIFICADO"}
+                onClick={() => marcarPresenca(id, "JUSTIFICADO")}
+              >
+                Justificado
+              </StatusButton>
+            </StatusButtons>
             </Row>
           )
         })}
