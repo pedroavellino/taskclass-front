@@ -116,7 +116,7 @@ export function Login() {
 
   useEffect(() => {
     if (user) {
-      navigate('/admin', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, navigate]);
 

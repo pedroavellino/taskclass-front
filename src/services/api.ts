@@ -1,7 +1,6 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://task-class-api-latest.onrender.com'
 const JWT_KEY = import.meta.env.VITE_JWT_STORAGE_KEY || 'fiap.jwt'
 
-
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem(JWT_KEY)
   const headers: HeadersInit = {
@@ -9,15 +8,22 @@ async function request(path: string, options: RequestInit = {}) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   }
+
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
+
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(text || `HTTP ${res.status}`)
+    try {
+      const errorJson = JSON.parse(text)
+      throw new Error(errorJson.message || `Erro ${res.status}`)
+    } catch {
+      throw new Error(text || `HTTP ${res.status}`)
+    }
   }
+
   const ct = res.headers.get('content-type') || ''
   return ct.includes('application/json') ? res.json() : res.text()
 }
-
 
 type BackPost = {
   id?: string
@@ -63,15 +69,14 @@ function toBack(p: Partial<Post>): BackPost {
   }
 }
 
+
 export const api = {
-  
   async login(email: string, senha: string) {
     const data = await request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, senha }),
     })
     storage.setToken(data.access_token)
-
     return data
   },
 
@@ -107,6 +112,32 @@ export const api = {
 
   async deletePost(id: string) {
     return request(`/posts/${id}`, { method: 'DELETE' })
+  },
+
+  async getAlunosPorTurma(turmaId: string) {
+    return request(`/alunos?turmaId=${turmaId}`)
+  },
+
+  async getPresencas(turmaId: string, data: string) {
+    return request(`/presencas?turmaId=${turmaId}&data=${data}`)
+  },
+
+  async salvarPresenca(registro: {
+    alunoId: string
+    turmaId: string
+    data: string
+    status: string
+  }) {
+    return request(`/presencas`, {
+      method: 'POST',
+      body: JSON.stringify(registro),
+    })
+  },
+  async atualizarPresenca(presencaId: string, novoStatus: string) {
+    return request(`/presencas/${presencaId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: novoStatus }),
+    })
   },
 }
 

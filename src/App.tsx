@@ -11,7 +11,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import styled from 'styled-components'
 import React from 'react'
 import { useAuth } from './modules/auth/AuthContext'
-import { Turmas } from './modules/caderneta/pages/turmas'
+import { Turmas } from './modules/caderneta/pages/Turmas'
 import { PresencaTurma } from './modules/caderneta/pages/PresencaTurma'
 
 const Container = styled.div`
@@ -55,11 +55,11 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/post/:id" element={<PostRead />} />
-        <Route path="/turmas" element={<Turmas />} />
-        <Route path="/turmas/:turmaId/presenca" element={<PresencaTurma />} />
 
+        <Route element={<ProtectedRoute />}>
+          <Route path="/turmas" element={<Turmas />} />
+          <Route path="/turmas/:turmaId/presenca" element={<PresencaTurma />} />
 
-        <Route>
           <Route path="/create" element={<PostCreate />} />
           <Route path="/edit/:id" element={<PostEdit />} />
           <Route path="/admin" element={<Admin />} />

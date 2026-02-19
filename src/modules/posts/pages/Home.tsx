@@ -41,7 +41,22 @@ const Actions = styled.div`
   margin-top: 1rem;
 `;
 
-const ActionButton = styled.button`
+const PrimaryButton = styled.button`
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+  transition: 0.2s;
+
+  &:hover {
+    background: #1d4ed8;
+  }
+`;
+
+const SecondaryButton = styled.button`
   padding: 0.6rem 1rem;
   border-radius: 8px;
   border: none;
@@ -55,6 +70,7 @@ const ActionButton = styled.button`
     background: #e2e8f0;
   }
 `;
+
 
 const Section = styled.div`
   display: flex;
@@ -158,20 +174,22 @@ export function Home() {
     <Page>
 
       <Hero>
-        <div>
-          <h1>Atividades Educacionais</h1>
-          <p>Gerencie, visualize e organize suas atividades.</p>
-        </div>
+  <div>
+    <h1>Atividades Educacionais</h1>
+    <p>Gerencie, visualize e organize suas atividades e presenças.</p>
+  </div>
 
-        <Actions>
-          <ActionButton onClick={() => navigate("/turmas")}>
-            Turmas
-          </ActionButton>
-          <ActionButton onClick={() => navigate("/turmas")}>
-             Caderneta
-          </ActionButton>
-        </Actions>
-      </Hero>
+  <Actions>
+    <PrimaryButton onClick={() => navigate("/create")}>
+      + Nova atividade
+    </PrimaryButton>
+
+    <SecondaryButton onClick={() => navigate("/turmas")}>
+      Turmas
+    </SecondaryButton>
+  </Actions>
+</Hero>
+
 
       <Section>
         <SearchInput
