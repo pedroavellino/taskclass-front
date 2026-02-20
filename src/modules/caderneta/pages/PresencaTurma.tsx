@@ -126,6 +126,7 @@ export function PresencaTurma() {
       if (!turmaId) return;
       try {
         const response = await api.getAlunosPorTurma(turmaId)
+        console.log("ALUNOS DA TURMA:", response)
         setAlunos(response)
       } catch (err) {
         console.error("Erro ao carregar alunos", err)
@@ -137,11 +138,16 @@ export function PresencaTurma() {
   useEffect(() => {
     async function carregarPresencas() {
       if (!turmaId) return;
+
+      setObservacoes({}); 
+      setMostrarObs({});
+      
       try {
         const response = await api.getPresencas(turmaId, dataSelecionada)
 
         const mapaUI: Record<string, string> = {}
         const mapaOrig: Record<string, { id: string, status: string }> = {}
+        const mapaObs: Record<string, string> = {} 
 
         const lista = response.data || []
 
@@ -155,15 +161,23 @@ export function PresencaTurma() {
 
             mapaUI[idAluno] = statusUpper
             mapaOrig[idAluno] = { id: idPresenca, status: statusUpper } 
+            
+            if (p.observacao) {
+              mapaObs[idAluno] = p.observacao
+            }
           }
         })
 
         setPresencas(mapaUI) 
         setPresencasOriginais(mapaOrig) 
+        
+        setObservacoes(mapaObs) 
+
       } catch (err) {
         console.log("Sem presenças para essa data")
         setPresencas({})
         setPresencasOriginais({})
+        setObservacoes({})
       }
     }
 
@@ -184,6 +198,24 @@ export function PresencaTurma() {
     }))
   }
 
+  async function salvarObservacaoUnica(alunoId: string) {
+    const obsAtual = observacoes[alunoId] || "";
+    const original = presencasOriginais[alunoId];
+
+    if (!original) {
+      alert("⚠️ A presença deste aluno ainda não foi salva. Primeiro marque se ele faltou ou veio e clique no botão 'Salvar Presença' lá embaixo!");
+      return;
+    }
+
+    try {
+      await api.atualizarPresenca(original.id, original.status.toLowerCase(), obsAtual);
+      alert("✅ Observação salva com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar observação:", error);
+      alert("Erro ao salvar a observação. Verifique o console.");
+    }
+  }
+
   async function salvarPresenca() {
     if (!turmaId) return;
     setLoading(true)
@@ -200,12 +232,11 @@ export function PresencaTurma() {
         const obsAtual = observacoes[alunoIdStr] || ""
 
         if (original && original.status === status) {
-      
           continue; 
         }
 
         if (original) {
-          await api.atualizarPresenca(original.id, status.toLowerCase())
+          await api.atualizarPresenca(original.id, status.toLowerCase(), obsAtual)
         } else {
           
           const payload = {
@@ -283,13 +314,33 @@ export function PresencaTurma() {
                 </StatusButtons>
               </RowTop>
 
-              {mostrarObs[id] && (
+              {(mostrarObs[id] || observacoes[id]) && (
                 <ObservacaoContainer>
                   <ObservacaoInput
                     placeholder="Adicione uma observação (comportamento, nota, aviso)..."
                     value={observacoes[id] || ""}
                     onChange={(e) => setObservacoes(prev => ({ ...prev, [id]: e.target.value }))}
                   />
+                  
+                  <button
+                    onClick={() => salvarObservacaoUnica(id)}
+                    style={{
+                      alignSelf: 'flex-end',
+                      padding: '0.4rem 1rem',
+                      backgroundColor: '#6366f1',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      marginTop: '0.5rem',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}
+                  >
+                   Salvar Observação
+                  </button>
                 </ObservacaoContainer>
               )}
 

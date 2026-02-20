@@ -133,11 +133,30 @@ export const api = {
       body: JSON.stringify(registro),
     })
   },
-  async atualizarPresenca(presencaId: string, novoStatus: string) {
+  async atualizarPresenca(presencaId: string, status: string, observacao?: string) {
     return request(`/presencas/${presencaId}`, {
       method: 'PUT',
-      body: JSON.stringify({ status: novoStatus }),
+      body: JSON.stringify({ status, observacao }),
     })
+  },
+
+  async enviarJustificativa(presencaId: string, alunoId: string, motivo: string, arquivo: File) {
+
+    const formData = new FormData();
+    formData.append("presencaId", presencaId);
+    formData.append("alunoId", alunoId);
+    formData.append("motivo", motivo);
+    formData.append("arquivo", arquivo);
+
+    const token = localStorage.getItem("sua_chave_de_token_aqui");
+
+    return fetch(`https://task-class-api-latest.onrender.com/justificativas`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }).then(res => res.json());
   },
 }
 
@@ -146,3 +165,4 @@ export const storage = {
   setToken(token: string) { localStorage.setItem(JWT_KEY, token) },
   clear() { localStorage.removeItem(JWT_KEY) },
 }
+

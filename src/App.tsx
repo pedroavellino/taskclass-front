@@ -13,6 +13,7 @@ import React from 'react'
 import { useAuth } from './modules/auth/AuthContext'
 import { Turmas } from './modules/caderneta/pages/Turmas'
 import { PresencaTurma } from './modules/caderneta/pages/PresencaTurma'
+import { PainelPai } from './modules/caderneta/pages/PainelPai'
 
 const Container = styled.div`
   max-width: 1100px;
@@ -55,6 +56,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/post/:id" element={<PostRead />} />
+
+        <Route path="/painel-pai" element={<PainelPai />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/turmas" element={<Turmas />} />
