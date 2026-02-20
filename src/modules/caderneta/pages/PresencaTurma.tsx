@@ -36,26 +36,36 @@ const Table = styled.div`
 `
 const Row = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 1rem;
   border-bottom: 1px solid #e2e8f0;
+`
+const RowTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `
 const StatusButtons = styled.div`
   display: flex;
   gap: 0.5rem;
 `
-
-const StatusButton = styled.button<{ $active?: boolean; $danger?: boolean; $warning?: boolean }>`
+const StatusButton = styled.button<{ $active?: boolean; $danger?: boolean; $info?: boolean }>`
   padding: 0.3rem 0.8rem;
   border-radius: 6px;
-  border: 1px solid ${({ $danger, $warning }) => ($danger ? "#dc2626" : $warning ? "#ea580c" : "#2563eb")};
-  background: ${({ $active, $danger, $warning }) =>
-    $active ? ($danger ? "#dc2626" : $warning ? "#ea580c" : "#2563eb") : "white"};
+  border: 1px solid ${({ $danger, $info }) => 
+    $danger ? "#dc2626" : $info ? "#6366f1" : "#2563eb"};
+  
+  background: ${({ $active, $danger, $info }) =>
+    $active 
+      ? ($danger ? "#dc2626" : $info ? "#6366f1" : "#2563eb") 
+      : "white"};
+      
   color: ${({ $active }) => ($active ? "white" : undefined)};
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s ease-in-out;
 `
+
 const SaveButton = styled.button`
   align-self: flex-end;
   background: #1e293b;
@@ -67,6 +77,28 @@ const SaveButton = styled.button`
   font-weight: 600;
   &:disabled { background: #94a3b8; cursor: not-allowed; }
   &:hover:not(:disabled) { background: #0f172a; }
+`
+
+const ObservacaoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #94a3b8;
+`
+const ObservacaoInput = styled.textarea`
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  &:focus { outline: none; border-color: #6366f1; }
 `
 
 type Aluno = {
@@ -82,13 +114,13 @@ export function PresencaTurma() {
   
   const [presencasOriginais, setPresencasOriginais] = useState<Record<string, { id: string, status: string }>>({})
   const [alunos, setAlunos] = useState<Aluno[]>([])
-  const [dataSelecionada, setDataSelecionada] = useState(
-    new Date().toISOString().split("T")[0]
-  )
+  const [dataSelecionada, setDataSelecionada] = useState(new Date().toISOString().split("T")[0])
   const [presencas, setPresencas] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
-  
+  const [observacoes, setObservacoes] = useState<Record<string, string>>({})
+  const [mostrarObs, setMostrarObs] = useState<Record<string, boolean>>({})
+
   useEffect(() => {
     async function carregarAlunos() {
       if (!turmaId) return;
@@ -145,6 +177,13 @@ export function PresencaTurma() {
     }))
   }
 
+  function toggleObs(alunoId: string) {
+    setMostrarObs((prev) => ({
+      ...prev,
+      [alunoId]: !prev[alunoId]
+    }))
+  }
+
   async function salvarPresenca() {
     if (!turmaId) return;
     setLoading(true)
@@ -158,8 +197,10 @@ export function PresencaTurma() {
 
       for (const [alunoIdStr, status] of Object.entries(presencas)) {
         const original = presencasOriginais[alunoIdStr]
+        const obsAtual = observacoes[alunoIdStr] || ""
 
         if (original && original.status === status) {
+      
           continue; 
         }
 
@@ -172,9 +213,10 @@ export function PresencaTurma() {
             turmaId: realTurmaId as string,
             data: dataSelecionada,
             status: status.toLowerCase(),
+            observacao: obsAtual 
           }
           
-          console.log("Enviando POST (Criar Nova Presença):", payload);
+          console.log("Enviando POST:", payload);
 
           await api.salvarPresenca(payload)
         }
@@ -212,32 +254,45 @@ export function PresencaTurma() {
           
           return (
             <Row key={id}>
-              <span>{aluno.nome}</span>
+              <RowTop>
+                <span>{aluno.nome}</span>
 
-              <StatusButtons>
-              <StatusButton
-                $active={presencas[id] === "PRESENTE"}
-                onClick={() => marcarPresenca(id, "PRESENTE")}
-              >
-                Presente
-              </StatusButton>
+                <StatusButtons>
+                  <StatusButton
+                    $active={presencas[id] === "PRESENTE"}
+                    onClick={() => marcarPresenca(id, "PRESENTE")}
+                  >
+                    Presente
+                  </StatusButton>
 
-              <StatusButton
-                $danger
-                $active={presencas[id] === "FALTA"}
-                onClick={() => marcarPresenca(id, "FALTA")}
-              >
-                Faltou
-              </StatusButton>
+                  <StatusButton
+                    $danger
+                    $active={presencas[id] === "FALTA"}
+                    onClick={() => marcarPresenca(id, "FALTA")}
+                  >
+                    Faltou
+                  </StatusButton>
 
-              <StatusButton
-                $warning
-                $active={presencas[id] === "JUSTIFICADO"}
-                onClick={() => marcarPresenca(id, "JUSTIFICADO")}
-              >
-                Justificado
-              </StatusButton>
-            </StatusButtons>
+                  <StatusButton
+                    $info
+                    $active={mostrarObs[id] || !!observacoes[id]}
+                    onClick={() => toggleObs(id)}
+                  >
+                   Observação
+                  </StatusButton>
+                </StatusButtons>
+              </RowTop>
+
+              {mostrarObs[id] && (
+                <ObservacaoContainer>
+                  <ObservacaoInput
+                    placeholder="Adicione uma observação (comportamento, nota, aviso)..."
+                    value={observacoes[id] || ""}
+                    onChange={(e) => setObservacoes(prev => ({ ...prev, [id]: e.target.value }))}
+                  />
+                </ObservacaoContainer>
+              )}
+
             </Row>
           )
         })}

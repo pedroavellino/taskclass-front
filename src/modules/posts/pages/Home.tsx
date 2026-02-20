@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { api } from "@/services/api";
-import type { Post } from "@/types";
 import { useNavigate } from "react-router-dom";
 
 const Page = styled.div`
@@ -71,104 +68,10 @@ const SecondaryButton = styled.button`
   }
 `;
 
-
-const Section = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const SearchInput = styled.input`
-  padding: .6rem .9rem;
-  border-radius: 10px;
-  border: 1px solid ${({theme}) => theme.colors.border};
-  font-size: .95rem;
-  width: 100%;
-  max-width: 400px;
-
-  &:focus {
-    outline: none;
-    border-color: #020086;
-    box-shadow: 0 0 0 2px rgba(2,0,134,0.2);
-  }
-`;
-
-const TableWrap = styled.div`
-  border: 1px solid ${({theme}) => theme.colors.border};
-  background: ${({theme}) => theme.colors.card};
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 12px 30px rgba(16,24,40,.08);
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-
-  thead th {
-    text-align: left;
-    font-weight: 700;
-    font-size: .9rem;
-    padding: 1rem;
-    border-bottom: 1px solid ${({theme}) => theme.colors.border};
-    background: #f8fafc;
-  }
-
-  tbody td {
-    padding: 1rem;
-    border-bottom: 1px solid ${({theme}) => theme.colors.border};
-  }
-
-  tbody tr:last-child td { border-bottom: none; }
-
-  tbody tr {
-    cursor: pointer;
-    transition: 0.15s;
-  }
-
-  tbody tr:hover {
-    background: #f1f5ff;
-  }
-`;
-
-const Empty = styled.div`
-  padding: 2rem;
-  color: ${({theme}) => theme.colors.muted};
-`;
-
 export function Home() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    let on = true;
-    setLoading(true);
-    setError(null);
-
-    api.getPosts(debouncedSearchTerm)
-      .then((data) => {
-        if (on) setPosts(data);
-      })
-      .catch((e:any) => setError(e.message || "Erro ao carregar as atividades."))
-      .finally(() => setLoading(false));
-
-    return () => { on = false; };
-  }, [debouncedSearchTerm]);
-
-  function openView(p: Post) {
-    navigate(`/post/${p.id}`);
-  }
 
   return (
     <Page>
@@ -189,49 +92,6 @@ export function Home() {
     </SecondaryButton>
   </Actions>
 </Hero>
-
-
-      <Section>
-        <SearchInput
-          type="text"
-          placeholder="Buscar por título ou descrição..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        <TableWrap>
-          <Table>
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Descrição</th>
-                <th>Disciplina</th>
-                <th>Autor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr><td colSpan={4}><Empty>Carregando…</Empty></td></tr>
-              )}
-              {error && !loading && (
-                <tr><td colSpan={4}><Empty role="alert">{error}</Empty></td></tr>
-              )}
-              {!loading && !error && posts.length === 0 && (
-                <tr><td colSpan={4}><Empty>Nenhuma atividade ainda.</Empty></td></tr>
-              )}
-              {!loading && !error && posts.map((p) => (
-                <tr key={p.id}
-                  onClick={() => openView(p)}>
-                  <td style={{fontWeight:600}}>{p.title}</td>
-                  <td>{p.content.slice(0, 40)}...</td>
-                  <td>{p.disciplina ?? "—"}</td>
-                  <td>{p.author ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </TableWrap>
-      </Section>
 
     </Page>
   );
