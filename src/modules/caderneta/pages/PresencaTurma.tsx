@@ -269,6 +269,13 @@ function normalizeId(v: any) {
   return String(v ?? "");
 }
 
+function normalizeAlunoId(v: any) {
+  if (!v) return "";
+  if (typeof v === "string" || typeof v === "number") return String(v);
+  if (typeof v === "object") return String(v._id ?? v.id ?? "");
+  return "";
+}
+
 export function PresencaTurma() {
   const { turmaId } = useParams();
   const navigate = useNavigate();
@@ -347,7 +354,7 @@ export function PresencaTurma() {
       const mapaObs: Record<string, string> = {};
 
       (Array.isArray(lista) ? lista : []).forEach((p: any) => {
-        const alunoId = normalizeId(p.alunoId);
+        const alunoId = normalizeAlunoId(p.alunoId);
         const presencaId = normalizeId(p.id ?? p._id);
         const dataOnly = toISODateOnly(p.data);
 
@@ -373,7 +380,6 @@ export function PresencaTurma() {
 
   useEffect(() => {
     recarregarPresencas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turmaIdStr, dataSelecionada]);
 
   function marcarPresenca(alunoId: string, status: string) {

@@ -120,7 +120,7 @@ export type Presenca = {
   id: string | number;
   alunoId: string | number | any;
   turmaId: string | number | any;
-  data: string; 
+  data: string;
   status: PresencaStatus;
   observacao?: string;
   createdAt?: string;
@@ -137,7 +137,6 @@ export type Justificativa = {
   createdAt?: string;
   updatedAt?: string;
 };
-
 
 export const api = {
   async login(email: string, senha: string) {
@@ -223,8 +222,38 @@ export const api = {
     });
   },
 
-  async getPresencas(turmaId: string, data: string) {
-    return request(`/presencas?turmaId=${encodeURIComponent(turmaId)}&data=${encodeURIComponent(data)}`);
+  /**
+   * ✅ Backend real (controller):
+   * GET /presencas/turma/:turmaId
+   */
+  async getPresencasPorTurma(turmaId: string): Promise<Presenca[]> {
+    const res: any = await request(
+      `/presencas/turma/${encodeURIComponent(turmaId)}`
+    );
+
+    const list = unwrapList<any>(res);
+
+    return list.map((p: any) => ({
+      id: String(p.id ?? p._id ?? ""),
+      alunoId: p.alunoId,
+      turmaId: p.turmaId,
+      data: String(p.data),
+      status: String(p.status ?? ""),
+      observacao: p.observacao != null ? String(p.observacao) : undefined,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+    }));
+  },
+
+  /**
+   * ✅ Alias para não quebrar chamadas antigas no front:
+   * O backend não filtra por data; a tela filtra.
+   */
+  async getPresencasPorTurmaEData(
+    turmaId: string,
+    _data: string
+  ): Promise<Presenca[]> {
+    return this.getPresencasPorTurma(turmaId);
   },
 
   async salvarPresenca(registro: {
@@ -240,10 +269,20 @@ export const api = {
     });
   },
 
-  async atualizarPresenca(presencaId: string, status: string, observacao?: string) {
+  /**
+   * ✅ Backend real (controller):
+   * PUT /presencas/:id  body: Partial<IPresenca>
+   * Então o payload deve ser objeto (status/observacao/etc).
+   */
+  async atualizarPresenca(
+    presencaId: string,
+    payload: Partial<
+      Pick<Presenca, "status" | "observacao" | "alunoId" | "turmaId" | "data">
+    >
+  ) {
     return request(`/presencas/${presencaId}`, {
       method: "PUT",
-      body: JSON.stringify({ status, observacao }),
+      body: JSON.stringify(payload),
     });
   },
 
