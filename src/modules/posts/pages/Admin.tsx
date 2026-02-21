@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "@/services/api";
 import type { Post } from "@/types";
 import { useNavigate } from "react-router-dom";
+import { IoArrowBackOutline } from "react-icons/io5";
 
 const Screen = styled.div`
   min-height: calc(100dvh - 64px);
@@ -19,7 +20,7 @@ const Page = styled.div`
 
 const TopBar = styled.div`
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
@@ -71,6 +72,15 @@ const ButtonBase = styled.button`
     opacity: 0.7;
     cursor: not-allowed;
   }
+`;
+
+const BackButton = styled(ButtonBase)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  background: ${({ theme }) => theme.colors.card2};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const NewButton = styled(ButtonBase)`
@@ -242,19 +252,6 @@ const ActionButton = styled.button<{ $danger?: boolean }>`
   }
 `;
 
-function formatDate(iso?: string) {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return "—";
-  }
-}
-
 export function Admin() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
@@ -336,6 +333,11 @@ export function Admin() {
           </TitleBlock>
 
           <Actions>
+            <BackButton type="button" onClick={() => navigate("/")}>
+              <IoArrowBackOutline />
+              Voltar
+            </BackButton>
+
             <NewButton onClick={newActivity}>+ Nova atividade</NewButton>
           </Actions>
         </TopBar>

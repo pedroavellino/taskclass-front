@@ -18,37 +18,16 @@ const Wrapper = styled.div`
   gap: 1.25rem;
 `;
 
-const TopBar = styled.div`
+const HeaderRow = styled.div`
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  align-items: flex-start;
+  gap: 1rem;
   flex-wrap: wrap;
-`;
-
-const BackButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  background: transparent;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  color: ${({ theme }) => theme.colors.text};
-
-  padding: 0.65rem 0.9rem;
-  border-radius: 12px;
-
-  cursor: pointer;
-  font-weight: 900;
-
-  transition: transform 0.02s ease, filter 0.15s ease;
-
-  &:hover {
-    filter: brightness(1.06);
-  }
-  &:active {
-    transform: translateY(1px);
-  }
 `;
 
 const TitleBlock = styled.div`
@@ -73,10 +52,46 @@ const Subtitle = styled.p`
   }
 `;
 
+const Actions = styled.div`
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+const ButtonBase = styled.button`
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-weight: 900;
+  cursor: pointer;
+
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  transition: transform 0.02s ease, filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const SecondaryButton = styled(ButtonBase)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  background: ${({ theme }) => theme.colors.card2};
+  color: ${({ theme }) => theme.colors.text};
+`;
+
 const Card = styled.form`
   max-width: 860px;
   width: 100%;
-
   margin: 0 auto;
 
   display: grid;
@@ -139,29 +154,6 @@ const Row = styled.div`
   flex-wrap: wrap;
 `;
 
-const ButtonBase = styled.button`
-  padding: 0.85rem 1rem;
-  border-radius: 12px;
-
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  cursor: pointer;
-
-  font-weight: 900;
-
-  transition: transform 0.02s ease, filter 0.15s ease;
-
-  &:hover {
-    filter: brightness(1.06);
-  }
-  &:active {
-    transform: translateY(1px);
-  }
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-`;
-
 const BtnPrimary = styled(ButtonBase)`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.bg};
@@ -209,12 +201,7 @@ export function PostCreate() {
   return (
     <Screen>
       <Wrapper>
-        <TopBar>
-          <BackButton type="button" onClick={() => navigate(-1)}>
-            <IoArrowBackOutline />
-            Voltar
-          </BackButton>
-
+        <HeaderRow>
           <TitleBlock>
             <Title>Nova atividade</Title>
             <Subtitle>
@@ -222,8 +209,13 @@ export function PostCreate() {
             </Subtitle>
           </TitleBlock>
 
-          <div />
-        </TopBar>
+          <Actions>
+            <SecondaryButton type="button" onClick={() => navigate(-1)}>
+              <IoArrowBackOutline />
+              Voltar
+            </SecondaryButton>
+          </Actions>
+        </HeaderRow>
 
         <Card onSubmit={onSubmit}>
           <Field>
