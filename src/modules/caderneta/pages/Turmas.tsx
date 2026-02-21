@@ -345,6 +345,11 @@ export function Turmas() {
                 + Nova Turma
               </PrimaryButton>
             )}
+            {isCoordenacao && (
+              <SecondaryButton type="button" onClick={() => navigate("/turmas/alunos")}>
+                Gerenciar alunos
+              </SecondaryButton>
+            )}
           </Actions>
         </HeaderRow>
 

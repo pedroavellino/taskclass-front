@@ -108,7 +108,7 @@ export type Turma = {
 
 export type Aluno = {
   id: string | number;
-  nome: string;
+  userId?: string | number;
   matricula: string;
   turmaId: any;
   responsavelId?: string | number;
@@ -205,7 +205,7 @@ export const api = {
 
     return list.map((a: any) => ({
       id: String(a.id ?? a._id ?? ""),
-      nome: a.nome,
+      userId: a.userId,
       matricula: a.matricula,
       turmaId: a.turmaId,
       responsavelId: a.responsavelId,
@@ -232,6 +232,26 @@ export const api = {
 
       return false;
     });
+  },
+
+  async createUser(data: { nome: string; email: string; senha: string; role: 'coordenacao' | 'professor' | 'responsavel' | 'aluno' }) {
+    const res: any = await request('/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+    return unwrapObject(res)
+  },
+
+  async createAluno(data: { userId: string; responsavelId: string; matricula: string; turmaId?: string }) {
+    const res: any = await request('/alunos', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+    return unwrapObject(res)
+  },
+
+  async getAlunosPopulated(): Promise<Aluno[]> {
+    return this.getAlunos()
   },
 
   async getPresencasPorTurma(turmaId: string): Promise<Presenca[]> {

@@ -15,6 +15,7 @@ import { useAuth } from './modules/auth/AuthContext'
 import { Turmas } from './modules/caderneta/pages/Turmas'
 import { PresencaTurma } from './modules/caderneta/pages/PresencaTurma'
 import { PainelPai } from './modules/caderneta/pages/PainelPai'
+import { Alunos } from './modules/caderneta/pages/Alunos';
 
 const Container = styled.div`
   max-width: 1100px;
@@ -66,6 +67,11 @@ export default function App() {
 
         <Route element={<ProtectedRoute roles={['coordenacao', 'professor']} />}>
           <Route path="/turmas" element={<Turmas />} />
+
+           <Route element={<ProtectedRoute roles={['coordenacao']} />}>
+            <Route path="/turmas/alunos" element={<Alunos />} />
+          </Route>
+
           <Route path="/turmas/:turmaId/presenca" element={<PresencaTurma />} />
         </Route>
 
