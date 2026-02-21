@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../services/api";
+import { useAuth } from "@/modules/auth/AuthContext";
 
 type TurmaUI = {
   id: string;
@@ -129,7 +130,6 @@ const Card = styled.div`
   transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease,
     border-color 0.15s ease;
 
-  /* glow sutil */
   &::before {
     content: "";
     position: absolute;
@@ -182,8 +182,51 @@ const InfoLine = styled.p`
   font-size: 0.9rem;
 `;
 
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 50;
+`;
+
+const Modal = styled.div`
+  width: min(520px, 100%);
+  background: ${({ theme }) => theme.colors.card};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 16px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.75rem;
+`;
+
+const Field = styled.div`
+  display: grid;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.8rem;
+    color: ${({ theme }) => theme.colors.muted};
+    font-weight: 700;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.inputBg};
+    color: ${({ theme }) => theme.colors.text};
+    outline: none;
+  }
+`;
+
 export function Turmas() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isCoordenacao = user?.role === "coordenacao";
 
   const [turmas, setTurmas] = useState<TurmaUI[]>([]);
   const [search, setSearch] = useState("");
@@ -191,55 +234,101 @@ export function Turmas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let alive = true;
+  // Modal nova turma
+  const [openNew, setOpenNew] = useState(false);
+  const [nome, setNome] = useState("");
+  const [ano, setAno] = useState(String(new Date().getFullYear()));
+  const [saving, setSaving] = useState(false);
 
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
+  async function loadTurmas() {
+    setLoading(true);
+    setError(null);
 
-        const turmasBack = await api.getTurmas();
+    try {
+      const turmasBack = await api.getTurmas({ limit: 50, page: 1 });
+      const alunosBack = await api.getAlunos();
 
-        // Para cada turma, buscamos total de alunos
-        const turmasComTotal: TurmaUI[] = await Promise.all(
-          turmasBack.map(async (t: any) => {
+      const countByTurma = new Map<string, number>();
+
+      if (Array.isArray(alunosBack)) {
+        for (const a of alunosBack) {
+          const turmaIdRaw = (a as any).turmaId;
+          const turmaId =
+            typeof turmaIdRaw === "string"
+              ? turmaIdRaw
+              : turmaIdRaw?._id
+                ? String(turmaIdRaw._id)
+                : null;
+
+          if (!turmaId) continue;
+          countByTurma.set(turmaId, (countByTurma.get(turmaId) ?? 0) + 1);
+        }
+      }
+
+      const ui: TurmaUI[] = Array.isArray(turmasBack)
+        ? turmasBack.map((t: any) => {
             const turmaId = String(t.id ?? t._id ?? "");
-            const alunos = await api.getAlunosPorTurma(turmaId);
-
             return {
               id: turmaId,
               nome: String(t.nome ?? ""),
               ano: String(t.ano ?? ""),
-              // Turno não existe no banco atual -> placeholder
-              turno: "—",
-              totalAlunos: Array.isArray(alunos) ? alunos.length : 0,
+              totalAlunos: countByTurma.get(turmaId) ?? 0,
             };
           })
-        );
+        : [];
 
-        if (!alive) return;
-        setTurmas(turmasComTotal);
-      } catch (e: any) {
-        if (!alive) return;
-        setError(e?.message ?? "Erro ao carregar turmas");
-        setTurmas([]);
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
+      setTurmas(ui);
+    } catch (e: any) {
+      setError(e?.message ?? "Erro ao carregar turmas");
+      setTurmas([]);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    load();
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!alive) return;
+      await loadTurmas();
+    })();
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return turmas.filter((t) => t.nome.toLowerCase().includes(q));
   }, [turmas, search]);
+
+  async function handleCreateTurma() {
+    const anoNum = Number(ano);
+    if (!nome.trim()) {
+      setError("Informe o nome da turma.");
+      return;
+    }
+    if (!Number.isFinite(anoNum) || anoNum < 2000 || anoNum > 2100) {
+      setError("Informe um ano válido.");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      await api.createTurma({ nome: nome.trim(), ano: anoNum });
+      setOpenNew(false);
+      setNome("");
+      setAno(String(new Date().getFullYear()));
+      await loadTurmas();
+    } catch (e: any) {
+      setError(e?.message ?? "Erro ao criar turma");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <Screen>
@@ -252,7 +341,12 @@ export function Turmas() {
 
           <Actions>
             <SecondaryButton onClick={() => navigate("/")}>← Voltar</SecondaryButton>
-            <PrimaryButton type="button">+ Nova Turma</PrimaryButton>
+
+            {isCoordenacao && (
+              <PrimaryButton type="button" onClick={() => setOpenNew(true)}>
+                + Nova Turma
+              </PrimaryButton>
+            )}
           </Actions>
         </HeaderRow>
 
@@ -280,6 +374,52 @@ export function Turmas() {
             </Card>
           ))}
         </Grid>
+
+        {openNew && (
+          <Backdrop onClick={() => !saving && setOpenNew(false)}>
+            <Modal onClick={(e) => e.stopPropagation()}>
+              <Title style={{ fontSize: "1.05rem" }}>Nova Turma</Title>
+
+              <Field>
+                <label>Nome</label>
+                <input
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Ex.: 3º Ano A"
+                  disabled={saving}
+                />
+              </Field>
+
+              <Field>
+                <label>Ano</label>
+                <input
+                  value={ano}
+                  onChange={(e) => setAno(e.target.value)}
+                  placeholder="2026"
+                  disabled={saving}
+                />
+              </Field>
+
+              <Actions style={{ justifyContent: "flex-end" }}>
+                <SecondaryButton
+                  type="button"
+                  onClick={() => setOpenNew(false)}
+                  disabled={saving}
+                >
+                  Cancelar
+                </SecondaryButton>
+
+                <PrimaryButton
+                  type="button"
+                  onClick={handleCreateTurma}
+                  disabled={saving}
+                >
+                  {saving ? "Salvando…" : "Criar"}
+                </PrimaryButton>
+              </Actions>
+            </Modal>
+          </Backdrop>
+        )}
       </Wrapper>
     </Screen>
   );

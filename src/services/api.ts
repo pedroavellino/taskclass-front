@@ -193,6 +193,13 @@ export const api = {
     };
   },
 
+  async createTurma(data: { nome: string; ano: number }) {
+    return request(`/turmas`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
   async getAlunos(): Promise<Aluno[]> {
     const res: any = await request("/alunos");
     const list = unwrapList<any>(res);
@@ -228,10 +235,6 @@ export const api = {
     });
   },
 
-  /**
-   * ✅ Backend real (controller):
-   * GET /presencas/turma/:turmaId
-   */
   async getPresencasPorTurma(turmaId: string): Promise<Presenca[]> {
     const res: any = await request(
       `/presencas/turma/${encodeURIComponent(turmaId)}`
@@ -251,10 +254,6 @@ export const api = {
     }));
   },
 
-  /**
-   * ✅ Alias para não quebrar chamadas antigas no front:
-   * O backend não filtra por data; a tela filtra.
-   */
   async getPresencasPorTurmaEData(
     turmaId: string,
     _data: string
@@ -275,11 +274,6 @@ export const api = {
     });
   },
 
-  /**
-   * ✅ Backend real (controller):
-   * PUT /presencas/:id  body: Partial<IPresenca>
-   * Então o payload deve ser objeto (status/observacao/etc).
-   */
   async atualizarPresenca(
     presencaId: string,
     payload: Partial<
