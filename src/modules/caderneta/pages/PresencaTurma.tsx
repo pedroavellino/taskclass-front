@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "@/services/api";
@@ -187,25 +187,6 @@ const ChipButton = styled.button<{
   }
 `;
 
-const AttachmentButton = styled.button`
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 900;
-  font-size: 0.85rem;
-
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.card2};
-  color: ${({ theme }) => theme.colors.muted};
-
-  transition: filter 0.15s ease;
-
-  &:hover {
-    filter: brightness(1.07);
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
 const ObservacaoContainer = styled.div`
   margin-top: 0.9rem;
   display: grid;
@@ -259,89 +240,45 @@ const SaveButton = styled(PrimaryButton)`
   padding: 0.85rem 1.25rem;
 `;
 
-const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: grid;
-  place-items: center;
-  z-index: 1000;
-  padding: 1rem;
-`;
-
-const ModalContent = styled.div`
-  width: min(520px, 100%);
-  background: ${({ theme }) => theme.colors.card};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 18px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
-  padding: 1.25rem 1.25rem 1rem;
-`;
-
-const ModalTitle = styled.h3`
-  margin: 0 0 0.5rem;
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 900;
-  letter-spacing: 0.2px;
-`;
-
-const ModalText = styled.p`
-  margin: 0.5rem 0 0;
+const EmptyHint = styled.p`
+  margin: 0.25rem 0 0;
   color: ${({ theme }) => theme.colors.muted};
-  line-height: 1.5;
-
-  strong {
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
-const ModalLink = styled.a`
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-
-  width: 100%;
-  box-sizing: border-box;
-  text-align: center;
-
-  border-radius: 12px;
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.bg};
-  font-weight: 900;
-  text-decoration: none;
-
-  transition: filter 0.15s ease;
-
-  &:hover {
-    filter: brightness(1.06);
-  }
-`;
-
-const MutedHint = styled.p`
-  margin: 1rem 0 0;
-  color: ${({ theme }) => theme.colors.muted};
-  font-size: 0.92rem;
-  font-style: italic;
-`;
-
-const CloseButton = styled(SecondaryButton)`
-  width: 100%;
-  margin-top: 0.75rem;
+  font-size: 0.95rem;
 `;
 
 type Aluno = {
+  id?: string | number;
   _id?: string;
-  id?: string;
   nome: string;
-  turmaId?: string;
+  turmaId?: string | number | { id?: string | number; _id?: string | number };
 };
+
+type PresencaOrig = { id: string; status: string };
+
+const STATUS = {
+  PRESENTE: "Presente",
+  FALTOU: "Faltou",
+  JUSTIFICADA: "Justificada",
+} as const;
+
+function toISODateOnly(value: string) {
+  return String(value).slice(0, 10); 
+}
+
+function normalizeId(v: any) {
+  return String(v ?? "");
+}
 
 export function PresencaTurma() {
   const { turmaId } = useParams();
   const navigate = useNavigate();
 
+  const turmaIdStr = useMemo(() => (turmaId ? String(turmaId) : ""), [turmaId]);
+
+  const [turmaNome, setTurmaNome] = useState<string>("");
+
   const [presencasOriginais, setPresencasOriginais] = useState<
-    Record<string, { id: string; status: string }>
+    Record<string, PresencaOrig>
   >({});
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [dataSelecionada, setDataSelecionada] = useState(
@@ -353,86 +290,91 @@ export function PresencaTurma() {
   const [observacoes, setObservacoes] = useState<Record<string, string>>({});
   const [mostrarObs, setMostrarObs] = useState<Record<string, boolean>>({});
 
-  const [justificativas, setJustificativas] = useState<
-    Record<string, { motivo: string; arquivoUrl: string }>
-  >({});
-  const [justificativaAberta, setJustificativaAberta] = useState<{
-    motivo: string;
-    arquivoUrl?: string;
-  } | null>(null);
+  useEffect(() => {
+    let alive = true;
+
+    async function carregarTurma() {
+      if (!turmaIdStr) return;
+      try {
+        const t: any = await api.getTurma(turmaIdStr);
+        if (!alive) return;
+        setTurmaNome(String(t?.nome ?? ""));
+      } catch {
+        if (!alive) return;
+        setTurmaNome("");
+      }
+    }
+
+    carregarTurma();
+    return () => {
+      alive = false;
+    };
+  }, [turmaIdStr]);
 
   useEffect(() => {
+    let alive = true;
+
     async function carregarAlunos() {
-      if (!turmaId) return;
+      if (!turmaIdStr) return;
       try {
-        const response = await api.getAlunosPorTurma(turmaId);
-        setAlunos(response);
+        const response = await api.getAlunosPorTurma(turmaIdStr);
+        if (!alive) return;
+        setAlunos(Array.isArray(response) ? response : []);
       } catch (err) {
         console.error("Erro ao carregar alunos", err);
+        if (!alive) return;
+        setAlunos([]);
       }
     }
+
     carregarAlunos();
-  }, [turmaId]);
+    return () => {
+      alive = false;
+    };
+  }, [turmaIdStr]);
+
+  async function recarregarPresencas() {
+    if (!turmaIdStr) return;
+
+    setObservacoes({});
+    setMostrarObs({});
+
+    try {
+      const lista = await api.getPresencasPorTurmaEData(turmaIdStr, dataSelecionada);
+
+      const mapaUI: Record<string, string> = {};
+      const mapaOrig: Record<string, PresencaOrig> = {};
+      const mapaObs: Record<string, string> = {};
+
+      (Array.isArray(lista) ? lista : []).forEach((p: any) => {
+        const alunoId = normalizeId(p.alunoId);
+        const presencaId = normalizeId(p.id ?? p._id);
+        const dataOnly = toISODateOnly(p.data);
+
+        if (!alunoId || !presencaId) return;
+        if (dataOnly !== dataSelecionada) return;
+
+        const status = String(p.status ?? "");
+        mapaUI[alunoId] = status;
+        mapaOrig[alunoId] = { id: presencaId, status };
+
+        if (p.observacao) mapaObs[alunoId] = String(p.observacao);
+      });
+
+      setPresencas(mapaUI);
+      setPresencasOriginais(mapaOrig);
+      setObservacoes(mapaObs);
+    } catch {
+      setPresencas({});
+      setPresencasOriginais({});
+      setObservacoes({});
+    }
+  }
 
   useEffect(() => {
-    async function carregarPresencas() {
-      if (!turmaId) return;
-
-      setObservacoes({});
-      setMostrarObs({});
-      setJustificativas({});
-
-      try {
-        const response = await api.getPresencas(turmaId, dataSelecionada);
-
-        const mapaUI: Record<string, string> = {};
-        const mapaOrig: Record<string, { id: string; status: string }> = {};
-        const mapaObs: Record<string, string> = {};
-        const mapaJustificativas: Record<
-          string,
-          { motivo: string; arquivoUrl: string }
-        > = {};
-
-        const lista = response.data || [];
-
-        lista.forEach((p: any) => {
-          const dataDaPresenca = p.data ? p.data.split("T")[0] : "";
-
-          if (dataDaPresenca === dataSelecionada) {
-            const idAluno = p.alunoId?._id || p.alunoId;
-            const idPresenca = p._id || p.id;
-            const statusUpper = String(p.status).toUpperCase();
-
-            mapaUI[idAluno] = statusUpper;
-            mapaOrig[idAluno] = { id: idPresenca, status: statusUpper };
-
-            if (p.observacao) {
-              mapaObs[idAluno] = p.observacao;
-            }
-            if (p.justificativa) {
-              mapaJustificativas[idAluno] = {
-                motivo: p.justificativa.motivo || p.motivoJustificativa,
-                arquivoUrl: p.justificativa.arquivoUrl || p.urlAtestado,
-              };
-            }
-          }
-        });
-
-        setPresencas(mapaUI);
-        setPresencasOriginais(mapaOrig);
-        setObservacoes(mapaObs);
-        setJustificativas(mapaJustificativas);
-      } catch (err) {
-        console.log("Sem presenças para essa data");
-        setPresencas({});
-        setPresencasOriginais({});
-        setObservacoes({});
-        setJustificativas({});
-      }
-    }
-
-    carregarPresencas();
-  }, [turmaId, dataSelecionada]);
+    recarregarPresencas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turmaIdStr, dataSelecionada]);
 
   function marcarPresenca(alunoId: string, status: string) {
     setPresencas((prev) => ({
@@ -454,14 +396,15 @@ export function PresencaTurma() {
 
     if (!original) {
       alert(
-        "A presença deste aluno ainda não foi salva. Primeiro marque se ele faltou ou veio e clique no botão 'Salvar Presença' lá embaixo!"
+        "A presença deste aluno ainda não foi salva. Primeiro marque e clique em 'Salvar Presença'!"
       );
       return;
     }
 
     try {
-      await api.atualizarPresenca(original.id, original.status.toLowerCase(), obsAtual);
+      await api.atualizarPresenca(original.id, { observacao: obsAtual });
       alert("Observação salva com sucesso!");
+      await recarregarPresencas();
     } catch (error) {
       console.error("Erro ao salvar observação:", error);
       alert("Erro ao salvar a observação. Verifique o console.");
@@ -469,40 +412,34 @@ export function PresencaTurma() {
   }
 
   async function salvarPresenca() {
-    if (!turmaId) return;
+    if (!turmaIdStr) return;
     setLoading(true);
 
     try {
-      let realTurmaId = turmaId;
-      if (alunos.length > 0 && alunos[0].turmaId) {
-        const tId = alunos[0].turmaId as any;
-        realTurmaId =
-          typeof tId === "object" ? tId._id || tId.id || turmaId : tId;
-      }
+      for (const [alunoId, status] of Object.entries(presencas)) {
+        const original = presencasOriginais[alunoId];
+        const obsAtual = observacoes[alunoId] || "";
 
-      for (const [alunoIdStr, status] of Object.entries(presencas)) {
-        const original = presencasOriginais[alunoIdStr];
-        const obsAtual = observacoes[alunoIdStr] || "";
-
-        if (original && original.status === status) {
-          continue;
-        }
+        if (original && original.status === status) continue;
 
         if (original) {
-          await api.atualizarPresenca(original.id, status.toLowerCase(), obsAtual);
-        } else {
-          const payload = {
-            alunoId: alunoIdStr,
-            turmaId: realTurmaId as string,
-            data: dataSelecionada,
-            status: status.toLowerCase(),
+          await api.atualizarPresenca(original.id, {
+            status,
             observacao: obsAtual,
-          };
-          await api.salvarPresenca(payload);
+          });
+        } else {
+          await api.salvarPresenca({
+            alunoId,
+            turmaId: turmaIdStr,
+            data: dataSelecionada,
+            status,
+            observacao: obsAtual,
+          });
         }
       }
 
       alert("Presença salva/atualizada com sucesso!");
+      await recarregarPresencas();
     } catch (error) {
       console.error("Erro ao salvar:", error);
       alert("Erro ao processar as presenças. Verifique o console.");
@@ -511,13 +448,18 @@ export function PresencaTurma() {
     }
   }
 
+  const subtituloTurma =
+    turmaNome?.trim()
+      ? `Turma ${turmaNome} • Selecione a data e marque a presença.`
+      : `Selecione a data e marque a presença.`;
+
   return (
     <Screen>
       <Wrapper>
         <TopBar>
           <TitleBlock>
             <Title>Caderneta</Title>
-            <Subtitle>Turma {turmaId} • Selecione a data e marque a presença.</Subtitle>
+            <Subtitle>{subtituloTurma}</Subtitle>
           </TitleBlock>
 
           <Actions>
@@ -533,113 +475,86 @@ export function PresencaTurma() {
           </Actions>
         </TopBar>
 
-        <List>
-          {alunos.map((aluno) => {
-            const id = aluno._id || aluno.id || "";
+        {alunos.length === 0 ? (
+          <EmptyHint>Nenhum aluno encontrado para esta turma.</EmptyHint>
+        ) : (
+          <List>
+            {alunos.map((aluno) => {
+              const id = String(aluno._id ?? aluno.id ?? "");
+              if (!id) return null;
 
-            return (
-              <Row key={id}>
-                <RowTop>
-                  <StudentName>{aluno.nome}</StudentName>
+              return (
+                <Row key={id}>
+                  <RowTop>
+                    <StudentName>{aluno.nome}</StudentName>
 
-                  <StatusButtons>
-                    {justificativas[id] && (
-                      <AttachmentButton
-                        onClick={() => setJustificativaAberta(justificativas[id])}
+                    <StatusButtons>
+                      <ChipButton
+                        $tone="primary"
+                        $active={presencas[id] === STATUS.PRESENTE}
+                        onClick={() => marcarPresenca(id, STATUS.PRESENTE)}
                       >
-                        📎 Ver justificativa
-                      </AttachmentButton>
-                    )}
+                        Presente
+                      </ChipButton>
 
-                    <ChipButton
-                      $tone="primary"
-                      $active={presencas[id] === "PRESENTE"}
-                      onClick={() => marcarPresenca(id, "PRESENTE")}
-                    >
-                      Presente
-                    </ChipButton>
+                      <ChipButton
+                        $tone="danger"
+                        $active={presencas[id] === STATUS.FALTOU}
+                        onClick={() => marcarPresenca(id, STATUS.FALTOU)}
+                      >
+                        Faltou
+                      </ChipButton>
 
-                    <ChipButton
-                      $tone="danger"
-                      $active={presencas[id] === "FALTA"}
-                      onClick={() => marcarPresenca(id, "FALTA")}
-                    >
-                      Faltou
-                    </ChipButton>
+                      <ChipButton
+                        $tone="warning"
+                        $active={presencas[id] === STATUS.JUSTIFICADA}
+                        onClick={() => marcarPresenca(id, STATUS.JUSTIFICADA)}
+                      >
+                        Justificada
+                      </ChipButton>
 
-                    <ChipButton
-                      $tone="warning"
-                      $active={presencas[id] === "JUSTIFICADA"}
-                      onClick={() => marcarPresenca(id, "JUSTIFICADA")}
-                    >
-                      Justificada
-                    </ChipButton>
+                      <ChipButton
+                        $tone="primary"
+                        $active={mostrarObs[id] || !!observacoes[id]}
+                        onClick={() => toggleObs(id)}
+                      >
+                        Observação
+                      </ChipButton>
+                    </StatusButtons>
+                  </RowTop>
 
-                    <ChipButton
-                      $tone="primary"
-                      $active={mostrarObs[id] || !!observacoes[id]}
-                      onClick={() => toggleObs(id)}
-                    >
-                      Observação
-                    </ChipButton>
-                  </StatusButtons>
-                </RowTop>
+                  {(mostrarObs[id] || observacoes[id]) && (
+                    <ObservacaoContainer>
+                      <ObservacaoInput
+                        placeholder="Adicione uma observação (comportamento, nota, aviso)..."
+                        value={observacoes[id] || ""}
+                        onChange={(e) =>
+                          setObservacoes((prev) => ({
+                            ...prev,
+                            [id]: e.target.value,
+                          }))
+                        }
+                      />
 
-                {(mostrarObs[id] || observacoes[id]) && (
-                  <ObservacaoContainer>
-                    <ObservacaoInput
-                      placeholder="Adicione uma observação (comportamento, nota, aviso)..."
-                      value={observacoes[id] || ""}
-                      onChange={(e) =>
-                        setObservacoes((prev) => ({ ...prev, [id]: e.target.value }))
-                      }
-                    />
-
-                    <SaveObsButton type="button" onClick={() => salvarObservacaoUnica(id)}>
-                      Salvar observação
-                    </SaveObsButton>
-                  </ObservacaoContainer>
-                )}
-              </Row>
-            );
-          })}
-        </List>
+                      <SaveObsButton
+                        type="button"
+                        onClick={() => salvarObservacaoUnica(id)}
+                      >
+                        Salvar observação
+                      </SaveObsButton>
+                    </ObservacaoContainer>
+                  )}
+                </Row>
+              );
+            })}
+          </List>
+        )}
 
         <FooterBar>
           <SaveButton onClick={salvarPresenca} disabled={loading}>
             {loading ? "Salvando..." : "Salvar Presença"}
           </SaveButton>
         </FooterBar>
-
-        {justificativaAberta && (
-          <ModalOverlay onClick={() => setJustificativaAberta(null)}>
-            <ModalContent onClick={(e) => e.stopPropagation()}>
-              <ModalTitle>Detalhes da justificativa</ModalTitle>
-
-              <ModalText>
-                <strong>Motivo:</strong>
-                <br />
-                {justificativaAberta.motivo}
-              </ModalText>
-
-              {justificativaAberta.arquivoUrl ? (
-                <ModalLink
-                  href={justificativaAberta.arquivoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  📥 Baixar arquivo anexo
-                </ModalLink>
-              ) : (
-                <MutedHint>Nenhum arquivo foi anexado.</MutedHint>
-              )}
-
-              <CloseButton type="button" onClick={() => setJustificativaAberta(null)}>
-                Fechar
-              </CloseButton>
-            </ModalContent>
-          </ModalOverlay>
-        )}
       </Wrapper>
     </Screen>
   );

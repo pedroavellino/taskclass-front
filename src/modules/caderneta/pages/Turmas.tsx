@@ -1,12 +1,12 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "../../../services/api";
 
-type Turma = {
+type TurmaUI = {
   id: string;
   nome: string;
   ano: string;
-  turno: string;
   totalAlunos: number;
 };
 
@@ -176,22 +176,70 @@ const Card = styled.div`
   }
 `;
 
+const InfoLine = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: 0.9rem;
+`;
+
 export function Turmas() {
   const navigate = useNavigate();
-  const [turmas, setTurmas] = useState<Turma[]>([]);
+
+  const [turmas, setTurmas] = useState<TurmaUI[]>([]);
   const [search, setSearch] = useState("");
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    setTurmas([
-      { id: "1", nome: "1º Ano A", ano: "2026", turno: "Manhã", totalAlunos: 28 },
-      { id: "2", nome: "2º Ano B", ano: "2026", turno: "Tarde", totalAlunos: 25 },
-      { id: "3", nome: "3º Ano C", ano: "2026", turno: "Noite", totalAlunos: 30 },
-    ]);
+    let alive = true;
+
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const turmasBack = await api.getTurmas();
+
+        // Para cada turma, buscamos total de alunos
+        const turmasComTotal: TurmaUI[] = await Promise.all(
+          turmasBack.map(async (t: any) => {
+            const turmaId = String(t.id ?? t._id ?? "");
+            const alunos = await api.getAlunosPorTurma(turmaId);
+
+            return {
+              id: turmaId,
+              nome: String(t.nome ?? ""),
+              ano: String(t.ano ?? ""),
+              // Turno não existe no banco atual -> placeholder
+              turno: "—",
+              totalAlunos: Array.isArray(alunos) ? alunos.length : 0,
+            };
+          })
+        );
+
+        if (!alive) return;
+        setTurmas(turmasComTotal);
+      } catch (e: any) {
+        if (!alive) return;
+        setError(e?.message ?? "Erro ao carregar turmas");
+        setTurmas([]);
+      } finally {
+        if (!alive) return;
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const filtered = turmas.filter((t) =>
-    t.nome.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return turmas.filter((t) => t.nome.toLowerCase().includes(q));
+  }, [turmas, search]);
 
   return (
     <Screen>
@@ -214,6 +262,12 @@ export function Turmas() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
+        {loading && <InfoLine>Carregando turmas...</InfoLine>}
+        {!loading && error && <InfoLine>{error}</InfoLine>}
+        {!loading && !error && filtered.length === 0 && (
+          <InfoLine>Nenhuma turma encontrada.</InfoLine>
+        )}
+
         <Grid>
           {filtered.map((turma) => (
             <Card
@@ -222,7 +276,6 @@ export function Turmas() {
             >
               <h3>{turma.nome}</h3>
               <p>Ano: {turma.ano}</p>
-              <p>Turno: {turma.turno}</p>
               <p>{turma.totalAlunos} alunos</p>
             </Card>
           ))}
