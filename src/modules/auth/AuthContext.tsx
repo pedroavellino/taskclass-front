@@ -8,55 +8,78 @@ type Ctx = {
   logout: () => void
 }
 
+type JwtPayload = {
+  sub: string
+  email: string
+  role: string
+  iat?: number
+  exp?: number
+}
+
 const AuthContext = createContext<Ctx | null>(null)
+
+function decodeJwtPayload(token: string): JwtPayload {
+  const parts = token.split('.')
+  if (parts.length !== 3) throw new Error('Invalid token')
+
+  // Base64URL -> Base64
+  const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
+
+  const json = atob(padded)
+  return JSON.parse(json) as JwtPayload
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem(storage.key)
-    const userCache = localStorage.getItem('fiap.user')
+    if (!token) return
 
-    if (token && userCache) {
-      try {
-        const parsedUser = JSON.parse(userCache)
-        setUser(parsedUser)
-      } catch (e) {
-        storage.clear()
-        localStorage.removeItem('fiap.user')
+    try {
+      const payload = decodeJwtPayload(token)
+
+      const userData: User = {
+        id: payload.sub,
+        name: payload.email,
+        email: payload.email,
+        role: payload.role,
       }
+
+      localStorage.setItem('fiap.user', JSON.stringify(userData))
+      setUser(userData)
+    } catch (e) {
+      storage.clear()
+      localStorage.removeItem('fiap.user')
+      setUser(null)
     }
   }, [])
 
   async function login(email: string, password: string) {
     const response = await fetch(
-      "https://task-class-api-latest.onrender.com/auth/login",
+      'https://task-class-api-latest.onrender.com/auth/login',
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          senha: password,
-        }),
-      }
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha: password }),
+      },
     )
-    console.log("Status:", response.status)
 
     if (!response.ok) {
-      throw new Error("Seu e-mail e/ou senha estão errados.")
+      throw new Error('Seu e-mail e/ou senha estão errados.')
     }
 
     const data = await response.json()
-
     storage.setToken(data.access_token)
 
+    const payload = decodeJwtPayload(data.access_token)
+
     const userData: User = {
-      id: email,
-      name: email,
-      email,
-      role: "teacher", 
+      id: payload.sub,
+      name: payload.email,
+      email: payload.email,
+      role: payload.role,
     }
 
     localStorage.setItem('fiap.user', JSON.stringify(userData))
@@ -71,11 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => ({ user, login, logout }), [user])
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

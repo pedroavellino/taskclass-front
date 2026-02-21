@@ -147,10 +147,17 @@ export function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate("/", { replace: true });
+    if (!user) return
+
+    const nextByRole: Record<string, string> = {
+      coordenacao: '/turmas',
+      professor: '/turmas',
+      responsavel: '/painel-pai',
+      aluno: '/',
     }
-  }, [user, navigate]);
+
+    navigate(nextByRole[user.role] ?? '/', { replace: true })
+  }, [user, navigate])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -159,6 +166,7 @@ export function Login() {
 
     try {
       await login(email, password);
+      navigate("/", { replace: true });
     } catch {
       setError("Seu e-mail e/ou senha estão errados.");
     } finally {
@@ -177,7 +185,7 @@ export function Login() {
             <strong>TaskClass</strong>
           </Brand>
           <h1>Bem-vindo de volta</h1>
-          <p>Faça login para gerenciar as atividades dos seus alunos</p>
+          <p>Faça login para acessar a caderneta digital.</p>
         </Header>
 
         <div style={{ display: "grid", gap: "0.75rem", marginTop: ".25rem" }}>

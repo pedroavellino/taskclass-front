@@ -7,6 +7,7 @@ import { PostCreate } from './modules/posts/pages/PostCreate'
 import { PostEdit } from './modules/posts/pages/PostEdit'
 import { Admin } from './modules/posts/pages/Admin'
 import { Login } from './modules/auth/Login'
+import Unauthorized from './modules/auth/Unauthorized'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import styled from 'styled-components'
 import React from 'react'
@@ -46,27 +47,39 @@ function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
+function FallbackRoute() {
+  const { user } = useAuth()
+  return <Navigate to={user ? '/' : '/login'} replace />
+}
+
 export default function App() {
   return (
     <Layout>
       <Routes>
         <Route path="/login" element={<Login />} />
-
-        <Route path="/painel-pai" element={<PainelPai />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/post/:id" element={<PostRead />} />
+        </Route>
 
+        <Route element={<ProtectedRoute roles={['coordenacao', 'professor']} />}>
           <Route path="/turmas" element={<Turmas />} />
           <Route path="/turmas/:turmaId/presenca" element={<PresencaTurma />} />
+        </Route>
 
+        <Route element={<ProtectedRoute roles={['responsavel']} />}>
+          <Route path="/painel-pai" element={<PainelPai />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={['coordenacao']} />}>
           <Route path="/create" element={<PostCreate />} />
           <Route path="/edit/:id" element={<PostEdit />} />
           <Route path="/admin" element={<Admin />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<FallbackRoute />} />
       </Routes>
     </Layout>
   )
