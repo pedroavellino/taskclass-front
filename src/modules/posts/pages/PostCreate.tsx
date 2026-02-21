@@ -1,135 +1,298 @@
-import { FormEvent, useState } from 'react'
-import styled from 'styled-components'
-import { api } from '@/services/api'
-import { useNavigate } from 'react-router-dom'
-import { IoArrowBackOutline } from 'react-icons/io5';
+import { FormEvent, useState } from "react";
+import styled from "styled-components";
+import { api } from "@/services/api";
+import { useNavigate } from "react-router-dom";
+import { IoArrowBackOutline } from "react-icons/io5";
 
-const Card = styled.form`
-  max-width: 860px;
-  margin: 1.5rem auto;
+const Screen = styled.div`
+  min-height: calc(100dvh - 64px);
+  background: ${({ theme }) => theme.colors.bg};
+`;
+
+const Wrapper = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+
   display: grid;
-  gap: .9rem;
-  border: 1px solid ${({theme}) => theme.colors.border};
-  background: ${({theme}) => theme.colors.card};
-  padding: 1.5rem;
-  border-radius: ${({theme}) => theme.radius};
-  box-shadow: 0 10px 30px rgba(16,24,40,.06);
-`
-const Field = styled.div`
-  display: grid; gap: .35rem;
-  label { font-size: .9rem; color: ${({theme}) => theme.colors.muted}; font-weight: 600; }
-  input, textarea {
-    padding: .85rem 1rem;
-    border-radius: 10px;
-    border: 1px solid ${({theme}) => theme.colors.border};
-    background: #f3f6ff;
-    color: ${({theme}) => theme.colors.text};
-  }
-  textarea { min-height: 220px; }
-`
-const Row = styled.div`
-  display: flex; gap: .75rem; margin-top: .25rem;
-  flex-wrap: wrap;
-`
-const BtnPrimary = styled.button`
-  padding: .9rem 1rem;
-  border-radius: 12px;
-  border: 1px solid ${({theme}) => theme.colors.border};
-  background: ${({theme}) => theme.colors.primary};
-  color: #fff; font-weight: 700; cursor: pointer;
-`
-const BtnGhost = styled.button`
-  padding: .9rem 1rem;
-  border-radius: 12px;
-  border: 1px solid ${({theme}) => theme.colors.border};
-  background: #ffd0d5; color: #3c0d15; font-weight: 700; cursor: pointer;
-`
+  gap: 1.25rem;
+`;
 
-const BackButton = styled.button`
-  background: none;
-  border: none;
-  color: ${({theme}) => theme.colors.text};
-  font-size: 1rem;
-  cursor: pointer;
+const TopBar = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+`;
+
+const BackButton = styled.button`
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0;
-  margin-bottom: 1rem;
+
+  background: transparent;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.text};
+
+  padding: 0.65rem 0.9rem;
+  border-radius: 12px;
+
+  cursor: pointer;
+  font-weight: 900;
+
+  transition: transform 0.02s ease, filter 0.15s ease;
 
   &:hover {
-    color: ${({theme}) => theme.colors.primary};
+    filter: brightness(1.06);
+  }
+  &:active {
+    transform: translateY(1px);
   }
 `;
 
-export function PostCreate() {
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [disciplina, setDisciplina] = useState('')
-  const [turma, setTurma] = useState('')
-  const [content, setContent] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
+const TitleBlock = styled.div`
+  display: grid;
+  gap: 0.25rem;
+`;
 
+const Title = styled.h2`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 900;
+  letter-spacing: 0.2px;
+`;
+
+const Subtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: 0.92rem;
+
+  strong {
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+const Card = styled.form`
+  max-width: 860px;
+  width: 100%;
+
+  margin: 0 auto;
+
+  display: grid;
+  gap: 0.95rem;
+
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.card};
+  padding: 1.25rem;
+
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+`;
+
+const Field = styled.div`
+  display: grid;
+  gap: 0.4rem;
+
+  label {
+    font-size: 0.9rem;
+    color: ${({ theme }) => theme.colors.muted};
+    font-weight: 800;
+  }
+
+  input,
+  textarea {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.inputBg};
+    color: ${({ theme }) => theme.colors.text};
+
+    outline: none;
+    font-weight: 700;
+
+    &::placeholder {
+      color: ${({ theme }) => theme.colors.muted};
+      opacity: 0.85;
+      font-weight: 600;
+    }
+
+    &:focus {
+      border-color: ${({ theme }) => theme.colors.primary};
+      box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.22);
+    }
+  }
+
+  textarea {
+    min-height: 240px;
+    resize: vertical;
+    font-weight: 650;
+    line-height: 1.45;
+  }
+`;
+
+const Row = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+`;
+
+const ButtonBase = styled.button`
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  cursor: pointer;
+
+  font-weight: 900;
+
+  transition: transform 0.02s ease, filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const BtnPrimary = styled(ButtonBase)`
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.bg};
+  border-color: transparent;
+`;
+
+const BtnDanger = styled(ButtonBase)`
+  background: ${({ theme }) => theme.colors.danger};
+  color: ${({ theme }) => theme.colors.bg};
+  border-color: transparent;
+`;
+
+const ErrorText = styled.p`
+  margin: 0.25rem 0 0;
+  color: ${({ theme }) => theme.colors.danger};
+  font-weight: 700;
+`;
+
+export function PostCreate() {
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [disciplina, setDisciplina] = useState("");
+  const [turma, setTurma] = useState("");
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   async function onSubmit(e: FormEvent) {
-    e.preventDefault()
-    setLoading(true); setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
-      await api.createPost({ title, author, disciplina, turma, content })
-      navigate('/admin')
+      await api.createPost({ title, author, disciplina, turma, content });
+      navigate("/admin");
     } catch (err: any) {
-      setError(err.message || 'Falha ao criar atividade')
+      setError(err.message || "Falha ao criar atividade");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   return (
-    <>
-    <BackButton onClick={() => navigate(-1)}>
-        <IoArrowBackOutline />
-        Voltar
-    </BackButton>
-    <Card onSubmit={onSubmit}>
-      <div>
-        <h2 style={{marginTop:0, marginBottom:0}}>Nova atividade</h2>
-        <small style={{marginTop:0}}>(*) Campos Obrigatórios</small>
-      </div>
+    <Screen>
+      <Wrapper>
+        <TopBar>
+          <BackButton type="button" onClick={() => navigate(-1)}>
+            <IoArrowBackOutline />
+            Voltar
+          </BackButton>
 
-      <Field>
-        <label htmlFor="title">Título*</label>
-        <input id="title" value={title} onChange={e=>setTitle(e.target.value)} required />
-      </Field>
+          <TitleBlock>
+            <Title>Nova atividade</Title>
+            <Subtitle>
+              <strong>(*)</strong> Campos obrigatórios
+            </Subtitle>
+          </TitleBlock>
 
-      <Field>
-        <label htmlFor="author">Autor*</label>
-        <input id="author" value={author} onChange={e=>setAuthor(e.target.value)} required />
-      </Field>
+          <div />
+        </TopBar>
 
-      <Field>
-        <label htmlFor="disciplina">Disciplina*</label>
-        <input id="disciplina" value={disciplina} onChange={e=>setDisciplina(e.target.value)} required />
-      </Field>
+        <Card onSubmit={onSubmit}>
+          <Field>
+            <label htmlFor="title">Título*</label>
+            <input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="Ex: Revisão de frações"
+            />
+          </Field>
 
-      <Field>
-        <label htmlFor="turma">Turma</label>
-        <input id="turma" value={turma} onChange={e=>setTurma(e.target.value)} />
-      </Field>
+          <Field>
+            <label htmlFor="author">Autor*</label>
+            <input
+              id="author"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              required
+              placeholder="Ex: coordenador@taskclass.com"
+            />
+          </Field>
 
-      <Field>
-        <label htmlFor="content">Conteúdo*</label>
-        <textarea id="content" value={content} onChange={e=>setContent(e.target.value)} required />
-      </Field>
+          <Field>
+            <label htmlFor="disciplina">Disciplina*</label>
+            <input
+              id="disciplina"
+              value={disciplina}
+              onChange={(e) => setDisciplina(e.target.value)}
+              required
+              placeholder="Ex: Matemática"
+            />
+          </Field>
 
-      {error && <p role="alert" style={{color:'#b42318'}}>{error}</p>}
+          <Field>
+            <label htmlFor="turma">Turma</label>
+            <input
+              id="turma"
+              value={turma}
+              onChange={(e) => setTurma(e.target.value)}
+              placeholder="Ex: 1º Ano A"
+            />
+          </Field>
 
-      <Row>
-        <BtnPrimary disabled={loading}>{loading ? 'Publicando…' : 'Publicar'}</BtnPrimary>
-        <BtnGhost type="button" onClick={()=>navigate(-1)}>Cancelar</BtnGhost>
-      </Row>
-    </Card>
-    </>
-  )
+          <Field>
+            <label htmlFor="content">Conteúdo*</label>
+            <textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              required
+              placeholder="Descreva a atividade, orientações e critérios..."
+            />
+          </Field>
+
+          {error && <ErrorText role="alert">{error}</ErrorText>}
+
+          <Row>
+            <BtnPrimary disabled={loading}>
+              {loading ? "Publicando…" : "Publicar"}
+            </BtnPrimary>
+
+            <BtnDanger type="button" onClick={() => navigate(-1)}>
+              Cancelar
+            </BtnDanger>
+          </Row>
+        </Card>
+      </Wrapper>
+    </Screen>
+  );
 }
