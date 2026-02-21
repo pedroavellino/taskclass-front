@@ -3,6 +3,6 @@ import { useAuth } from '@/modules/auth/AuthContext'
 
 export function ProtectedRoute() {
   const { user } = useAuth()
-  if (!user) return <Navigate to="/login" />
+  if (!user) return <Navigate to="/login" replace />
   return <Outlet />
 }

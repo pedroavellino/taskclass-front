@@ -1,25 +1,26 @@
-import { FormEvent, useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { useAuth } from './AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { FormEvent, useEffect, useState } from "react";
+import styled from "styled-components";
+import { useAuth } from "./AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Screen = styled.div`
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  background: #f3f6ff;
+  background: ${({ theme }) => theme.colors.bg};
   padding: 2rem;
-`
+`;
 
 const Card = styled.form`
+  width: min(520px, 100%);
   display: grid;
   gap: 1rem;
-  padding: 1.25rem 1.25rem 0.75rem;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #e6e8f0;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
-`
+  padding: 1.35rem 1.35rem 0.9rem;
+  border-radius: ${({ theme }) => theme.radius};
+  background: ${({ theme }) => theme.colors.card};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
+`;
 
 const Header = styled.div`
   display: grid;
@@ -27,115 +28,147 @@ const Header = styled.div`
   gap: 0.4rem;
   padding-top: 0.25rem;
   text-align: center;
+
   h1 {
     margin: 0;
     font-size: 1.15rem;
-    color: #0f172a;
-    font-weight: 700;
+    color: ${({ theme }) => theme.colors.text};
+    font-weight: 800;
     letter-spacing: 0.2px;
   }
+
   p {
     margin: 0;
-    color: #475569;
+    color: ${({ theme }) => theme.colors.muted};
     font-size: 0.92rem;
   }
-`
+`;
 
 const Brand = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #0f172a;
-  svg { width: 28px; height: 28px; color: #0f172a; }
-  strong { font-weight: 800; }
-`
+  color: ${({ theme }) => theme.colors.text};
+
+  svg {
+    width: 28px;
+    height: 28px;
+    color: ${({ theme }) => theme.colors.text};
+  }
+
+  strong {
+    font-weight: 900;
+  }
+`;
 
 const FieldBlock = styled.div`
   display: grid;
   gap: 0.35rem;
+
   label {
     font-size: 0.8rem;
-    color: #334155;
-    font-weight: 600;
+    color: ${({ theme }) => theme.colors.muted};
+    font-weight: 700;
   }
+
   input {
     width: 100%;
-    padding: 0.85rem 1rem;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: #e9edf3;
-    color: #0f172a;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.inputBg};
+    color: ${({ theme }) => theme.colors.text};
     outline: none;
   }
-  input::placeholder { color: #94a3b8; }
-  input:focus {
-    border-color: #94a3ff;
-    box-shadow: 0 0 0 3px rgba(124, 157, 255, 0.25);
-    background: #ffffff;
+
+  input::placeholder {
+    color: ${({ theme }) => theme.colors.muted};
+    opacity: 0.8;
   }
-`
+
+  input:focus {
+    border-color: ${({ theme }) => theme.colors.ring};
+    box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.22);
+  }
+`;
 
 const Button = styled.button`
-  padding: 0.85rem 1rem;
-  border-radius: 10px;
-  border: 1px solid #0b1320;
-  background: #0b1320;
-  color: #ffffff;
-  font-weight: 700;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.card2};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 900;
   cursor: pointer;
-  transition: transform .02s ease, filter .15s ease;
-  &:hover { filter: brightness(1.05); }
-  &:active { transform: translateY(1px); }
-  &:disabled { opacity: .7; cursor: not-allowed; }
-`
+  transition: transform 0.02s ease, filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
 
 const Divider = styled.hr`
   border: none;
-  border-top: 1px solid #e6e8f0;
-  margin: 0.5rem 0 0.25rem;
-`
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin: 0.6rem 0 0.25rem;
+`;
 
 const Footer = styled.div`
   display: flex;
   align-items: center;
   text-align: center;
-  gap: .5rem;
-  color: #475569;
+  gap: 0.5rem;
+  color: ${({ theme }) => theme.colors.muted};
   font-size: 0.85rem;
   padding: 0.35rem 0.25rem 0.8rem;
-  svg { width: 18px; height: 18px; opacity: .9; }
-`
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.9;
+  }
+`;
 
 export function Login() {
-  const { login, user } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
+  const { login, user } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
   async function onSubmit(e: FormEvent) {
-    e.preventDefault()
-    setLoading(true); setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
-      await login(email, password)
+      await login(email, password);
     } catch {
-        setError('Seu e-mail e/ou senha estão errados.')
+      setError("Seu e-mail e/ou senha estão errados.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-
   return (
     <Screen>
-      <Card onSubmit={onSubmit} aria-describedby={error ? 'login-err' : undefined}>
+      <Card onSubmit={onSubmit} aria-describedby={error ? "login-err" : undefined}>
         <Header>
           <Brand>
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -147,7 +180,7 @@ export function Login() {
           <p>Faça login para gerenciar as atividades dos seus alunos</p>
         </Header>
 
-        <div style={{ display: 'grid', gap: '0.75rem', marginTop: '.25rem' }}>
+        <div style={{ display: "grid", gap: "0.75rem", marginTop: ".25rem" }}>
           <FieldBlock>
             <label htmlFor="email">E-mail</label>
             <input
@@ -176,13 +209,21 @@ export function Login() {
           </FieldBlock>
 
           {error && (
-            <p id="login-err" role="alert" style={{ color: '#b42318', margin: '0.25rem 0 0' }}>
+            <p
+              id="login-err"
+              role="alert"
+              style={{
+                color: "#FF5A5F",
+                margin: "0.25rem 0 0",
+                fontWeight: 700,
+              }}
+            >
               {error}
             </p>
           )}
 
           <Button type="submit" disabled={loading}>
-            {loading ? 'Entrando…' : 'Entrar'}
+            {loading ? "Entrando…" : "Entrar"}
           </Button>
         </div>
 
@@ -196,5 +237,5 @@ export function Login() {
         </Footer>
       </Card>
     </Screen>
-  )
+  );
 }

@@ -23,13 +23,11 @@ const Container = styled.div`
 
 function Layout({ children }: { children: React.ReactNode }) {
   const loc = useLocation()
-  const { user } = useAuth();
-
+  const { user } = useAuth()
 
   if (loc.pathname === '/login') {
-    return <Container>{children}</Container>;
+    return <Container>{children}</Container>
   }
-
 
   if (!user) {
     return (
@@ -37,16 +35,15 @@ function Layout({ children }: { children: React.ReactNode }) {
         <HeaderGeral />
         <Container>{children}</Container>
       </>
-    );
+    )
   }
-
 
   return (
     <>
       <Header />
       <Container>{children}</Container>
     </>
-  );
+  )
 }
 
 export default function App() {
@@ -54,12 +51,13 @@ export default function App() {
     <Layout>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/post/:id" element={<PostRead />} />
 
         <Route path="/painel-pai" element={<PainelPai />} />
 
         <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/post/:id" element={<PostRead />} />
+
           <Route path="/turmas" element={<Turmas />} />
           <Route path="/turmas/:turmaId/presenca" element={<PresencaTurma />} />
 
