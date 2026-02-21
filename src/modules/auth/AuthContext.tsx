@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import type { User } from '@/types/index'
+import type { User, UserRole } from '@/types'
 import { storage } from '@/services/api'
 
 type Ctx = {
@@ -11,7 +11,7 @@ type Ctx = {
 type JwtPayload = {
   sub: string
   email: string
-  role: string
+  role: UserRole
   iat?: number
   exp?: number
 }
@@ -22,7 +22,6 @@ function decodeJwtPayload(token: string): JwtPayload {
   const parts = token.split('.')
   if (parts.length !== 3) throw new Error('Invalid token')
 
-  // Base64URL -> Base64
   const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
   const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
 

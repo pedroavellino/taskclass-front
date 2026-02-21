@@ -234,7 +234,6 @@ export function Turmas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal nova turma
   const [openNew, setOpenNew] = useState(false);
   const [nome, setNome] = useState("");
   const [ano, setAno] = useState(String(new Date().getFullYear()));
@@ -295,7 +294,6 @@ export function Turmas() {
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered = useMemo(() => {

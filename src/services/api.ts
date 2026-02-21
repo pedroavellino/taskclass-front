@@ -98,10 +98,6 @@ function toBack(p: Partial<Post>): BackPost {
   };
 }
 
-/** =========================
- *  TIPOS: CADERNETA
- *  ========================= */
-
 export type Turma = {
   id: string | number;
   nome: string;
@@ -167,8 +163,11 @@ export const api = {
     return data;
   },
 
-  async getTurmas(): Promise<Turma[]> {
-    const res: any = await request("/turmas");
+  async getTurmas(params?: { limit?: number; page?: number }): Promise<Turma[]> {
+    const limit = params?.limit ?? 50;
+    const page = params?.page ?? 1;
+
+    const res: any = await request(`/turmas?limit=${limit}&page=${page}`);
     const list = unwrapList<any>(res);
 
     return list.map((t: any) => ({
