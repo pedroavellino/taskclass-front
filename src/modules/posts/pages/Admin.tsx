@@ -271,10 +271,16 @@ export function Admin() {
       const data = await api.getPosts(term);
       setPosts(data);
     } catch (e: any) {
-      setError(e.message || "Erro ao carregar as atividades.");
-    } finally {
-      setLoading(false);
-    }
+      if (e?.status === 401) {
+      setError("Sessão expirada. Faça login novamente.");
+      } else if (e?.status === 403) {
+        setError("Você não tem permissão para acessar.");
+      } else if (e?.status === 500) {
+        setError("Erro interno no servidor ao listar atividades.");
+      } else {
+        setError(e?.message || "Erro ao carregar as atividades.");
+      }
+    }  
   };
 
   useEffect(() => {
@@ -294,7 +300,17 @@ export function Admin() {
       .then((data) => {
         if (on) setPosts(data);
       })
-      .catch((e: any) => setError(e.message || "Erro ao carregar as atividades."))
+      .catch((e: any) => {
+        if (e?.status === 401) {
+          setError("Sessão expirada. Faça login novamente.");
+        } else if (e?.status === 403) {
+          setError("Você não tem permissão para acessar.");
+        } else if (e?.status === 500) {
+          setError("Erro interno no servidor ao listar atividades.");
+        } else {
+          setError(e?.message || "Erro ao carregar as atividades.");
+        }
+      })
       .finally(() => setLoading(false));
 
     return () => {

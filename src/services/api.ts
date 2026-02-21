@@ -20,12 +20,18 @@ async function request(path: string, options: RequestInit = {}) {
 
   if (!res.ok) {
     const text = await res.text();
+
+    let message = `HTTP ${res.status}`;
     try {
       const errorJson = JSON.parse(text);
-      throw new Error(errorJson.message || `Erro ${res.status}`);
+      message = errorJson.message || message;
     } catch {
-      throw new Error(text || `HTTP ${res.status}`);
+      message = text || message;
     }
+
+    const err: any = new Error(message);
+    err.status = res.status;
+    throw err;
   }
 
   const ct = res.headers.get("content-type") || "";
