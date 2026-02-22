@@ -405,18 +405,21 @@ export function Alunos() {
               <thead>
                 <tr>
                   <th>Matrícula</th>
+                  <th>Aluno</th>
                   <th>Turma</th>
                   <th>Responsável</th>
-                  <th>Conta do aluno</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((a: any) => (
-                  <tr key={String(a.id)}>
+                  <tr key={String(a.id || a._id)}>
                     <td>{a.matricula}</td>
+                    
+                    <td>{a.nome || (a.userId && a.userId.nome) || "—"}</td>
+                    
                     <td>{getTurmaLabel(a.turmaId)}</td>
-                    <td>{String(a.responsavelId ?? "—")}</td>
-                    <td>{String(a.userId ?? "—")}</td>
+                  
+                    <td>{(a.responsavelId && a.responsavelId.nome) || "—"}</td>
                   </tr>
                 ))}
               </tbody>

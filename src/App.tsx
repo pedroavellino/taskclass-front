@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Header } from './components/Header'
 import { HeaderGeral } from './components/HeaderGeral'
 import { Home } from './modules/posts/pages/Home'
+import { HomeResponsavel } from './modules/posts/pages/HomeResponsavel'
 import { PostRead } from './modules/posts/pages/PostRead'
 import { PostCreate } from './modules/posts/pages/PostCreate'
 import { PostEdit } from './modules/posts/pages/PostEdit'
@@ -22,6 +23,17 @@ const Container = styled.div`
   margin: 0 auto;
   padding: 1rem;
 `
+function SmartHome() {
+  const { user } = useAuth();
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  if (user.role === 'responsavel') {
+    return <HomeResponsavel />;
+  }
+
+  return <Home />;
+}
 
 function Layout({ children }: { children: React.ReactNode }) {
   const loc = useLocation()
@@ -61,7 +73,7 @@ export default function App() {
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<SmartHome />} />
           <Route path="/post/:id" element={<PostRead />} />
         </Route>
 

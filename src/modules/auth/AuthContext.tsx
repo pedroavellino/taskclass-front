@@ -12,6 +12,7 @@ type JwtPayload = {
   sub: string
   email: string
   role: UserRole
+  nome?: string // Campo que o Elias deve mandar
   iat?: number
   exp?: number
 }
@@ -41,7 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userData: User = {
         id: payload.sub,
-        name: payload.email,
+        // 👇 Tenta pegar o nome real, senão usa o email como reserva
+        name: payload.nome || payload.email, 
         email: payload.email,
         role: payload.role,
       }
@@ -76,7 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const userData: User = {
       id: payload.sub,
-      name: payload.email,
+      // 👇 Tenta pegar o nome real aqui também no login
+      name: payload.nome || payload.email,
       email: payload.email,
       role: payload.role,
     }

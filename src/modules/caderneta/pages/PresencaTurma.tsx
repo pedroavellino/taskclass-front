@@ -249,16 +249,16 @@ const EmptyHint = styled.p`
 type Aluno = {
   id?: string | number;
   _id?: string;
-  nome: string;
+  nome?: string; 
+  userId?: any; 
   turmaId?: string | number | { id?: string | number; _id?: string | number };
 };
-
 type PresencaOrig = { id: string; status: string };
 
 const STATUS = {
-  PRESENTE: "Presente",
-  FALTOU: "Faltou",
-  JUSTIFICADA: "Justificada",
+  PRESENTE: "presente",
+  FALTOU: "falta",
+  JUSTIFICADA: "justificada",
 } as const;
 
 function toISODateOnly(value: string) {
@@ -326,7 +326,7 @@ export function PresencaTurma() {
       try {
         const response = await api.getAlunosPorTurma(turmaIdStr);
         if (!alive) return;
-        setAlunos(Array.isArray(response) ? response : []);
+        setAlunos(Array.isArray(response) ? (response as any) : []);
       } catch (err) {
         console.error("Erro ao carregar alunos", err);
         if (!alive) return;
@@ -492,7 +492,9 @@ export function PresencaTurma() {
               return (
                 <Row key={id}>
                   <RowTop>
-                    <StudentName>{aluno.nome}</StudentName>
+                   <StudentName>
+                    {aluno.nome || (aluno.userId && (aluno.userId as any).nome) || "⚠️ Nome não encontrado"}
+                  </StudentName>
 
                     <StatusButtons>
                       <ChipButton
