@@ -96,7 +96,6 @@ export function HomeResponsavel() {
   const nomeExibicao = useMemo(() => {
     if (!user?.name) return "Responsável";
     
-    // Se o nome for um email, corta antes do @ e deixa a primeira letra maiúscula
     if (user.name.includes('@')) {
       const parteAntesDoArroba = user.name.split('@')[0];
       return parteAntesDoArroba.charAt(0).toUpperCase() + parteAntesDoArroba.slice(1);
